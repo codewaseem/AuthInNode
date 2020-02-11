@@ -11,17 +11,9 @@ let testsData = {
   badPasswords: ["123465789", "abcdefghijk", "21213", "126456andjk"],
 };
 
-type RequestData = {
-  url: string;
-  body: { [key: string]: any };
-};
-
 describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
   test("should respond with 415, if the Content-Type: Header is set to other than application/json", async () => {
-    let response = await request(app)
-      .post(SIGNUP_ENDPOINT)
-      .send("text");
-
+    let response = await makePostRequestToSignUp("text");
     expect(response.status).toBe(415);
   });
 
@@ -73,7 +65,7 @@ describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
     });
   });
 });
-function makePostRequestToSignUp(body: { [key: string]: any }) {
+function makePostRequestToSignUp(body: { [key: string]: any } | string) {
   return request(app)
     .post(SIGNUP_ENDPOINT)
     .send(body);
