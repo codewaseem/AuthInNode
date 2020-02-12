@@ -2,6 +2,7 @@ require("dotenv").config();
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import UserModel from "./user";
+import { getDBConnection } from "../setup";
 
 const mongoServer = new MongoMemoryServer();
 const userData = {
@@ -15,14 +16,8 @@ describe("User Model", () => {
   let connection: mongoose.Mongoose;
   beforeAll(async () => {
     const uri = await mongoServer.getConnectionString();
-
-    connection = await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useCreateIndex: true,
-    });
+    connection = await getDBConnection(uri);
   });
-
   test("create & save user successfully", async () => {
     const validUser = new UserModel(userData);
     const savedUser = await validUser.save();
