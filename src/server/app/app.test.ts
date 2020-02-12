@@ -2,9 +2,7 @@ import request from "supertest";
 import app from ".";
 import { sample } from "lodash";
 import { Strings } from "../constants/strings";
-import authControllers from "../auth/controllers";
-
-jest.mock("../auth/controllers");
+import { Request, Response } from "express";
 
 const SIGNUP_ENDPOINT = "/auth/signup";
 let testsData = {
@@ -17,6 +15,10 @@ let testsData = {
 };
 
 describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
   test("should respond with 415, if the Content-Type: Header is set to other than application/json", async () => {
     let response = await makePostRequestToSignUp("text");
     expect(response.status).toBe(415);
@@ -71,8 +73,6 @@ describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
   });
 
   test("should respond with 422, if name is invalid", async () => {
-    jest.unmock("../auth/controllers");
-
     let badNameRequestResponse = await makePostRequestToSignUp({
       email: sample(testsData.goodEmails),
       password: sample(testsData.goodPasswords),
@@ -101,15 +101,23 @@ describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
   });
 
   test("name should be sanitized", async () => {
-    let response = await makePostRequestToSignUp({
-      email: sample(testsData.goodEmails),
-      password: sample(testsData.goodPasswords),
-      name: "  bob   martin   ss   ",
-    });
+    const signUpController = jest.fn((req: Request, res: Response) =>
+      res.end()
+    );
+    jest.doMock("../auth/controllers", () => ({
+      signUpController,
+    }));
 
-    expect(
-      (authControllers.signUpController as jest.Mock).mock.calls[0][0].body.name
-    ).toBe("bob martin");
+    const { default: app } = await import(".");
+    await request(app)
+      .post(SIGNUP_ENDPOINT)
+      .send({
+        email: sample(testsData.goodEmails),
+        password: sample(testsData.goodPasswords),
+        name: "  bob   martin   ss   ",
+      });
+    expect(signUpController.mock.calls[0][0].body.name).toBe("bob martin ss");
+    signUpController.mockRestore();
   });
 });
 
