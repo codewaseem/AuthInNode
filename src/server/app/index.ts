@@ -3,7 +3,7 @@ import cors from "cors";
 import { json, urlencoded } from "body-parser";
 import morgan from "morgan";
 
-import authRouter from "../routes/auth";
+import authRouter from "../auth/routes";
 
 const app = express();
 
