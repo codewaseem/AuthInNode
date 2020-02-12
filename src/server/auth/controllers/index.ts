@@ -1,6 +1,9 @@
+// eslint-disable-next-line no-unused-vars
 import { Request, Response } from "express";
+import authInteractor from "../../../core/interactors/auth-interactor";
 
-export function signUpController(req: Request, res: Response): any {
+export async function signUpController(req: Request, res: Response) {
   res.status(501);
-  res.json(req.body);
+  let user = await authInteractor.signUp(req.body);
+  res.json(user);
 }

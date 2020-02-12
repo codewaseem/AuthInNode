@@ -2,7 +2,17 @@ import request from "supertest";
 import app from ".";
 import { sample } from "lodash";
 import { Strings } from "../constants/strings";
-import { Request, Response } from "express";
+// eslint-disable-next-line no-unused-vars
+import express from "express";
+
+jest.mock("../../core/interactors/auth-interactor", () => ({
+  signUp: jest.fn(
+    (signUpData: SignUpData): User => ({
+      id: "1",
+      ...signUpData,
+    })
+  ),
+}));
 
 const SIGNUP_ENDPOINT = "/auth/signup";
 let testsData = {
@@ -101,8 +111,8 @@ describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
   });
 
   test("name should be sanitized", async () => {
-    const signUpController = jest.fn((req: Request, res: Response) =>
-      res.end()
+    const signUpController = jest.fn(
+      (req: express.Request, res: express.Response) => res.end()
     );
     jest.doMock("../auth/controllers", () => ({
       signUpController,
@@ -118,6 +128,20 @@ describe(`Auth API: SignUp: ${SIGNUP_ENDPOINT}`, () => {
       });
     expect(signUpController.mock.calls[0][0].body.name).toBe("bob martin ss");
     signUpController.mockRestore();
+  });
+
+  test("provided valid sign up data, should respond with user", async () => {
+    let response = await makePostRequestToSignUp({
+      email: sample(testsData.goodEmails),
+      password: sample(testsData.goodPasswords),
+      name: sample(testsData.goodNames),
+    });
+
+    expect(response.body).toMatchObject({
+      name: expect.any(String),
+      id: expect.any(String),
+      email: expect.any(String),
+    });
   });
 });
 

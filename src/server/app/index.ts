@@ -3,6 +3,7 @@ import cors from "cors";
 import { json, urlencoded } from "body-parser";
 import morgan from "morgan";
 
+require("dotenv").config();
 import authRouter from "../auth/routes";
 
 const app = express();
