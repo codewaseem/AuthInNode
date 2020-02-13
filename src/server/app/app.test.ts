@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from ".";
 import { sample } from "lodash";
-import { Strings } from "../constants/strings";
+import { Strings } from "../../constants/strings";
 // eslint-disable-next-line no-unused-vars
 import express from "express";
 

@@ -1,5 +1,5 @@
 import { check } from "express-validator";
-import { Strings } from "../../constants/strings";
+import { Strings } from "../../../constants/strings";
 import { onlyJSONContentType, handleValidatorErrors } from ".";
 
 export const signUpRequestValidator = [

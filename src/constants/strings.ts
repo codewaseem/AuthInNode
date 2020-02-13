@@ -4,4 +4,6 @@ export const Strings = {
     "Password should be atleast 8 characters long, must contain atleast 1 lower case, 1 upper case, 1 number, and 1 special character.",
   InvalidName:
     "Name should be atleast 2 characters long and upto 24 characters maximum.",
+  DBNotConnected: "Database is not connected.",
+  DBGatewayNotSet: "DBGateway not set.",
 };

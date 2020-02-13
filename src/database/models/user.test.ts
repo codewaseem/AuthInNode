@@ -1,10 +1,8 @@
 require("dotenv").config();
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import UserModel from "./user";
-import { getDBConnection } from "../setup";
+import { startDB, stopDB } from "../setup";
 
-const mongoServer = new MongoMemoryServer();
 const userData = {
   name: "TekLoon",
   email: "testuser@gmail.comm",
@@ -13,21 +11,18 @@ const userData = {
 mongoose.Promise = global.Promise;
 
 describe("User Model", () => {
-  let connection: mongoose.Mongoose;
+  let authDB: AuthDBGateway;
   beforeAll(async () => {
-    const uri = await mongoServer.getConnectionString();
-    connection = await getDBConnection(uri);
+    authDB = await startDB();
   });
   test("create & save user successfully", async () => {
-    const validUser = new UserModel(userData);
-    const savedUser = await validUser.save();
+    const savedUser = await authDB.addUser(userData);
     expect(savedUser.id).toBeDefined();
     expect(savedUser.name).toBe(userData.name);
     expect(savedUser.email).toBe(userData.email);
   });
 
   afterAll(async () => {
-    connection.disconnect();
-    mongoServer.stop();
+    stopDB();
   });
 });

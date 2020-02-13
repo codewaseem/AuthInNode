@@ -53,9 +53,6 @@ UserSchema.methods = {
 };
 
 declare interface IUser extends mongoose.Document {
-  hashed_password: any;
-  password: any;
-  _password: any;
   name: string;
   email: string;
   role: string;
