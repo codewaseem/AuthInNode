@@ -1,10 +1,13 @@
 import AuthInteractor from "../controllers/auth";
 import { sample } from "lodash";
-import { LoginStrategy } from "../constants";
 import UserDBGateway from "../database/UserDBGateway";
+import EMailer from "../controllers/mail";
+// eslint-disable-next-line no-unused-vars
+import { User } from "../interfaces";
 
 jest.mock("../database/UserDBGateway");
 let userDbGateway = new UserDBGateway();
+jest.mock("../controllers/mail");
 
 let testsData = {
   goodEmails: ["waseem@gmail.com", "waseem76429@gmail.com"],
@@ -28,7 +31,7 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
         await authInteractor.signup({
           email: sample(badEmail) || "",
           name: sample(testsData.goodNames) || "",
-          loginStrategy: LoginStrategy.Local,
+          password: sample(testsData.goodPasswords) || "",
         });
       } catch (e) {
         expect(e).toMatch("Invalid Email");
@@ -42,24 +45,11 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
         await authInteractor.signup({
           email: sample(testsData.goodEmails) || "",
           name: badName,
-          loginStrategy: LoginStrategy.Local,
+          password: sample(testsData.goodPasswords) || "",
         });
       } catch (e) {
         expect(e).toMatch("Invalid Name.");
       }
-  });
-
-  test("signup: if login strategy is local, then password should be specified else throw error", async () => {
-    expect.assertions(1);
-    try {
-      await authInteractor.signup({
-        email: sample(testsData.goodEmails) || "",
-        name: sample(testsData.goodNames) || "",
-        loginStrategy: LoginStrategy.Local,
-      });
-    } catch (e) {
-      expect(e).toMatch("Invalid Password.");
-    }
   });
 
   test(`signup: password should be of atleast 8 chars long having atleast 1 small, 
@@ -70,7 +60,6 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
         await authInteractor.signup({
           email: sample(testsData.goodEmails) || "",
           name: sample(testsData.goodNames) || "",
-          loginStrategy: LoginStrategy.Local,
           password: badPassword,
         });
       } catch (e) {
@@ -78,32 +67,39 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
       }
   });
 
-  test(`signup: when loginStrategy is other than local, password can be empty`, async () => {
+  test(`should throw an error if a user already exists with the given email`, async () => {
+    userDbGateway.getUserByEmail = jest.fn((email: string) => {
+      if (email == "signedupuser@email.com") {
+        return Promise.resolve({
+          email,
+        } as User);
+      }
+      return Promise.resolve(null);
+    });
     expect.assertions(1);
-
-    await expect(
-      authInteractor.signup.bind(authInteractor, {
-        email: sample(testsData.goodEmails) || "",
-        name: sample(testsData.goodNames) || "",
-        loginStrategy: LoginStrategy.GitHub,
-      })
-    ).not.toThrow();
+    try {
+      await authInteractor.signup({
+        email: "signedupuser@email.com",
+        name: "Signed Up Already",
+        password: sample(testsData.goodPasswords) || "",
+      });
+    } catch (e) {
+      expect(e).toMatch("User with given email already exists.");
+    }
   });
 
-  test(`should return newly created user when correct inputs are provided`, async () => {
+  test(`signup: should send confirmation email when the provided data is valid`, async () => {
+    let email = "codewaseem@gmail.com";
     await authInteractor.signup({
-      email: sample(testsData.goodEmails) || "",
+      email,
       name: sample(testsData.goodNames) || "",
-      loginStrategy: LoginStrategy.Local || "",
       password: sample(testsData.goodPasswords) || "",
     });
 
-    expect(userDbGateway.addUser).toHaveBeenCalled();
-    expect(userDbGateway.addUser).toHaveBeenCalledWith({
-      email: expect.any(String),
-      name: expect.any(String),
-      loginStrategy: LoginStrategy.Local,
-      password: expect.any(String),
-    });
+    expect(EMailer.sendSignUpConfirmation).toHaveBeenCalled();
+    expect(EMailer.sendSignUpConfirmation).toHaveBeenCalledWith(
+      email,
+      expect.any(String)
+    );
   });
 });

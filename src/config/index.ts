@@ -1,5 +1,5 @@
 const config = {
-  SITE_URL: "http://localhost:3000/",
+  SITE_URL: "https://localhost:3000",
 };
 
 export default config;

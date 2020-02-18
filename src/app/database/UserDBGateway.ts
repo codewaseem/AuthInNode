@@ -17,7 +17,7 @@ export default class UserGateway implements UserDBGateway {
       } else return Promise.resolve(null);
     }
   }
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<User | null> {
     return await UserModel.findOne({ email });
   }
   async getUserById(id: string): Promise<User | null> {

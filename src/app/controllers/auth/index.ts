@@ -2,6 +2,8 @@ import validator from "validator";
 import { LoginStrategy } from "../../constants";
 // eslint-disable-next-line no-unused-vars
 import { UserDBGateway, SignUpData, User } from "../../interfaces";
+import EMailer from "../mail";
+import TokenController from "../tokens";
 
 class AuthInteractor {
   private userDbGateway: UserDBGateway;
@@ -10,41 +12,46 @@ class AuthInteractor {
     this.userDbGateway = userDbGateway;
   }
 
-  async signup(signUpData: SignUpData): Promise<User> {
+  async signup(signUpData: SignUpData): Promise<void> {
     let sanitizedName = this.sanitizeName(signUpData.name);
     let normalizedEmail = validator.normalizeEmail(signUpData.email) || "";
+
+    let user = await this.userDbGateway.getUserByEmail(normalizedEmail);
+    if (user) throw "User with given email already exists.";
+
     this.validateSignUpData(
       normalizedEmail,
       sanitizedName,
-      signUpData.loginStrategy,
       signUpData.password
     );
 
-    return this.userDbGateway.addUser(signUpData);
+    let token = TokenController.generateToken({
+      email: normalizedEmail,
+      name: sanitizedName,
+      loginStrategy: LoginStrategy.Local,
+      password: signUpData.password,
+    });
+
+    await EMailer.sendSignUpConfirmation(normalizedEmail, token);
   }
 
   private validateSignUpData(
     normalizedEmail: string,
     sanitizedName: string,
-    loginStrategy: LoginStrategy,
-    password: string | undefined
+    password: string
   ) {
     this.validateEmail(normalizedEmail);
     this.validateName(sanitizedName);
-    this.validatePassword(loginStrategy, password);
+    this.validatePassword(password);
   }
 
-  private validatePassword(
-    loginStrategy: LoginStrategy,
-    password: string | undefined
-  ) {
+  private validatePassword(password: string) {
     if (
-      loginStrategy == LoginStrategy.Local &&
-      (!password ||
-        !validator.matches(
-          password,
-          /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=.\-_*])([a-zA-Z0-9@#$%^&+=*.\-_]){8,}$/
-        ))
+      !password ||
+      !validator.matches(
+        password,
+        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=.\-_*])([a-zA-Z0-9@#$%^&+=*.\-_]){8,}$/
+      )
     ) {
       throw "Invalid Password.";
     }

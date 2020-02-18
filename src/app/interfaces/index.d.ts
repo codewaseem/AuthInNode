@@ -4,8 +4,7 @@ import { LoginStrategy } from "../constants";
 declare interface SignUpData {
   email: string;
   name: string;
-  loginStrategy: LoginStrategy;
-  password?: string;
+  password: string;
 }
 
 declare interface User {
@@ -17,4 +16,10 @@ declare interface User {
 
 declare interface UserDBGateway {
   addUser(data: SignUpData): Promise<User>;
+  getUserById(id: string): Promise<User | null>;
+  getUserByEmail(email: string): Promise<User | null>;
+  getUserByEmailAndPassword(
+    email: string,
+    password: string
+  ): Promise<User | null>;
 }

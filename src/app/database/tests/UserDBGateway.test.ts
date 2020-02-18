@@ -1,6 +1,5 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import DBConnector from "../DBConnector";
-import { LoginStrategy } from "../../constants";
 import UserGateway from "../UserDBGateway";
 
 const mongoServer = new MongoMemoryServer();
@@ -33,17 +32,15 @@ describe("User Entity", () => {
   describe("Adding new user and getting the same user back", () => {
     let id: string = "";
 
-    let { email, password, loginStrategy, name } = {
+    let { email, password, name } = {
       email: "waseem@gmail.com",
       password: "AGoodP@55Word",
-      loginStrategy: LoginStrategy.Local,
       name: "Waseem Ahmed",
     };
     test("addUser(): should be able to add a new user", async () => {
       let user = await userGateway.addUser({
         name,
         email,
-        loginStrategy,
         password,
       });
 
