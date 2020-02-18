@@ -62,6 +62,12 @@ describe("User Entity", () => {
       let user = await userGateway.getUserByEmail(email);
       expect(user?.email).toBe(email);
     });
+
+    test("getUserByEmailAndPassword(): should get the user by email and password", async () => {
+      let user = await userGateway.getUserByEmailAndPassword(email, password);
+      expect(user).toBeDefined();
+      console.log(user);
+    });
   });
 
   afterAll(async () => {

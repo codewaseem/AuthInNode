@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+// eslint-disable-next-line no-unused-vars
 import { LoginStrategy } from "../../constants";
 
 const UserSchema = new mongoose.Schema(
@@ -54,15 +55,20 @@ UserSchema.methods = {
     this.salt = bcrypt.genSaltSync(10);
     return bcrypt.hashSync(password, this.salt);
   },
+  isAuthenticated: function(password: string) {
+    return bcrypt.compareSync(password, this.hashed_password);
+  },
 };
 
 declare interface IUser extends mongoose.Document {
+  hashed_password?: string;
   id: string;
   name: string;
   email: string;
   loginStrategy: LoginStrategy;
   role?: string;
   resetPasswordLink?: string;
+  isAuthenticated(password: string): boolean;
 }
 
 const UserModel = mongoose.model<IUser>("User", UserSchema);
