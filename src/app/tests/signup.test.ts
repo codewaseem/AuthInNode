@@ -2,6 +2,8 @@ import AuthInteractor from "../controllers/auth";
 import { sample } from "lodash";
 import UserDBGateway from "../database/UserDBGateway";
 import EMailer from "../controllers/mail";
+jest.mock("../database/UserDBGateway");
+jest.mock("../controllers/mail");
 // eslint-disable-next-line no-unused-vars
 import { User } from "../interfaces";
 import {
@@ -11,9 +13,7 @@ import {
   UserAlreadyExists,
 } from "../constants/errors";
 
-jest.mock("../database/UserDBGateway");
 let userDbGateway = new UserDBGateway();
-jest.mock("../controllers/mail");
 
 let testsData = {
   goodEmails: ["waseem@gmail.com", "waseem76429@gmail.com"],
@@ -24,7 +24,7 @@ let testsData = {
   goodNames: [" bob   martin"],
 };
 
-describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
+describe("AuthInteractor: signup with email and password", () => {
   let authInteractor: AuthInteractor;
   beforeEach(() => {
     authInteractor = new AuthInteractor(userDbGateway);
