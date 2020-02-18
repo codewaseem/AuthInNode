@@ -92,6 +92,7 @@ describe("AuthInteractor: signup with email and password", () => {
     } catch (e) {
       expect(e).toMatch(UserAlreadyExists);
     }
+    userDbGateway.getUserByEmail = jest.fn();
   });
 
   test(`signup: should send confirmation email when the provided data is valid`, async () => {
