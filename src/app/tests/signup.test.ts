@@ -1,4 +1,4 @@
-import AuthInteractor from "../interactors/auth-interactor";
+import AuthInteractor from "../controllers/auth";
 import { sample } from "lodash";
 import { LoginStrategy } from "../constants";
 import UserDBGateway from "../database/UserDBGateway";
