@@ -4,6 +4,12 @@ import { LoginStrategy } from "../../constants";
 import { UserDBGateway, SignUpData, User } from "../../interfaces";
 import EMailer from "../mail";
 import TokenController from "../tokens";
+import {
+  InvalidPassword,
+  UserAlreadyExists,
+  InvalidName,
+  InvalidEmail,
+} from "../../constants/errors";
 
 class AuthInteractor {
   private userDbGateway: UserDBGateway;
@@ -16,8 +22,7 @@ class AuthInteractor {
     let sanitizedName = this.sanitizeName(signUpData.name);
     let normalizedEmail = validator.normalizeEmail(signUpData.email) || "";
 
-    let user = await this.userDbGateway.getUserByEmail(normalizedEmail);
-    if (user) throw "User with given email already exists.";
+    await this.checkForExistingUser(normalizedEmail);
 
     this.validateSignUpData(
       normalizedEmail,
@@ -25,14 +30,30 @@ class AuthInteractor {
       signUpData.password
     );
 
-    let token = TokenController.generateToken({
-      email: normalizedEmail,
-      name: sanitizedName,
-      loginStrategy: LoginStrategy.Local,
-      password: signUpData.password,
-    });
+    await this.sendConfirmationEmail(
+      normalizedEmail,
+      sanitizedName,
+      signUpData.password
+    );
+  }
 
-    await EMailer.sendSignUpConfirmation(normalizedEmail, token);
+  private async sendConfirmationEmail(
+    email: string,
+    name: string,
+    password: string
+  ) {
+    let token = TokenController.generateToken({
+      email,
+      name,
+      password,
+      loginStrategy: LoginStrategy.Local,
+    });
+    await EMailer.sendSignUpConfirmation(email, token);
+  }
+
+  private async checkForExistingUser(normalizedEmail: string) {
+    let user = await this.userDbGateway.getUserByEmail(normalizedEmail);
+    if (user) throw UserAlreadyExists;
   }
 
   private validateSignUpData(
@@ -53,7 +74,7 @@ class AuthInteractor {
         /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=.\-_*])([a-zA-Z0-9@#$%^&+=*.\-_]){8,}$/
       )
     ) {
-      throw "Invalid Password.";
+      throw InvalidPassword;
     }
   }
 
@@ -62,13 +83,13 @@ class AuthInteractor {
       !validator.matches(sanitizedName, /[a-zA-z\s]{2,24}/) ||
       !validator.isLength(sanitizedName, { min: 2, max: 24 })
     ) {
-      throw "Invalid Name.";
+      throw InvalidName;
     }
   }
 
   private validateEmail(normalizedEmail: string) {
     if (!validator.isEmail(normalizedEmail)) {
-      throw "Invalid Email.";
+      throw InvalidEmail;
     }
   }
 

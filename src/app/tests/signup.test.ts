@@ -4,6 +4,12 @@ import UserDBGateway from "../database/UserDBGateway";
 import EMailer from "../controllers/mail";
 // eslint-disable-next-line no-unused-vars
 import { User } from "../interfaces";
+import {
+  InvalidEmail,
+  InvalidName,
+  InvalidPassword,
+  UserAlreadyExists,
+} from "../constants/errors";
 
 jest.mock("../database/UserDBGateway");
 let userDbGateway = new UserDBGateway();
@@ -34,7 +40,7 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
           password: sample(testsData.goodPasswords) || "",
         });
       } catch (e) {
-        expect(e).toMatch("Invalid Email");
+        expect(e).toMatch(InvalidEmail);
       }
   });
 
@@ -48,7 +54,7 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
           password: sample(testsData.goodPasswords) || "",
         });
       } catch (e) {
-        expect(e).toMatch("Invalid Name.");
+        expect(e).toMatch(InvalidName);
       }
   });
 
@@ -63,7 +69,7 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
           password: badPassword,
         });
       } catch (e) {
-        expect(e).toMatch("Invalid Password.");
+        expect(e).toMatch(InvalidPassword);
       }
   });
 
@@ -84,7 +90,7 @@ describe("AuthInteractor: SignUp Flow: Local Strategy", () => {
         password: sample(testsData.goodPasswords) || "",
       });
     } catch (e) {
-      expect(e).toMatch("User with given email already exists.");
+      expect(e).toMatch(UserAlreadyExists);
     }
   });
 
