@@ -1,7 +1,7 @@
 import validator from "validator";
 import { LoginStrategy } from "../../constants";
 // eslint-disable-next-line no-unused-vars
-import { UserDBGateway, SignUpData, User } from "../../interfaces";
+import { UserDBGateway, SignUpData } from "../../interfaces";
 import EMailer from "../mail";
 import TokenController from "../tokens";
 import {

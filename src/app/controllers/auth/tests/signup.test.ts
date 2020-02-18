@@ -1,17 +1,17 @@
-import AuthInteractor from "../controllers/auth";
+import AuthInteractor from "..";
 import { sample } from "lodash";
-import UserDBGateway from "../database/UserDBGateway";
-import EMailer from "../controllers/mail";
-jest.mock("../database/UserDBGateway");
-jest.mock("../controllers/mail");
+import UserDBGateway from "../../../database/UserDBGateway";
+import EMailer from "../../mail";
+jest.mock("../../../database/UserDBGateway");
+jest.mock("../../mail");
 // eslint-disable-next-line no-unused-vars
-import { User } from "../interfaces";
+import { User } from "../../../interfaces";
 import {
   InvalidEmail,
   InvalidName,
   InvalidPassword,
   UserAlreadyExists,
-} from "../constants/errors";
+} from "../../../constants/errors";
 
 let userDbGateway = new UserDBGateway();
 
