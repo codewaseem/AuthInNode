@@ -1,5 +1,4 @@
 import validator from "validator";
-import { LoginStrategy } from "../../constants";
 // eslint-disable-next-line no-unused-vars
 import { UserDBGateway, SignUpData } from "../../interfaces";
 import EMailer from "../mail";
@@ -9,9 +8,31 @@ import {
   UserAlreadyExists,
   InvalidName,
   InvalidEmail,
+  TokenExpired,
 } from "../../constants/errors";
+import { LoginStrategy } from "../../constants";
 
 class AuthInteractor {
+  activateUser(token: string) {
+    try {
+      let userData = TokenController.verify(token) as SignUpData;
+      if (
+        !userData ||
+        typeof userData != "object" ||
+        !userData.email ||
+        !userData.name ||
+        !userData.password
+      )
+        throw TokenExpired;
+
+      this.userDbGateway.addUser({
+        ...userData,
+        loginStrategy: LoginStrategy.Local,
+      });
+    } catch (e) {
+      throw TokenExpired;
+    }
+  }
   private userDbGateway: UserDBGateway;
 
   constructor(userDbGateway: UserDBGateway) {
@@ -46,7 +67,6 @@ class AuthInteractor {
       email,
       name,
       password,
-      loginStrategy: LoginStrategy.Local,
     });
     await EMailer.sendSignUpConfirmation(email, token);
   }

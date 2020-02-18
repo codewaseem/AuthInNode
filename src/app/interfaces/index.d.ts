@@ -5,6 +5,7 @@ declare interface SignUpData {
   email: string;
   name: string;
   password: string;
+  loginStrategy?: string;
 }
 
 declare interface User {
