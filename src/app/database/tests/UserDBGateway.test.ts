@@ -63,10 +63,26 @@ describe("User Entity", () => {
       expect(user?.email).toBe(email);
     });
 
-    test("getUserByEmailAndPassword(): should get the user by email and password", async () => {
+    test("getUserByEmailAndPassword(): should get the user by email and correct password", async () => {
       let user = await userGateway.getUserByEmailAndPassword(email, password);
       expect(user).toBeDefined();
-      console.log(user);
+    });
+
+    test("getUserByEmailAndPassword: should return null, if email and password mismatch", async () => {
+      expect.assertions(2);
+      let user = await userGateway.getUserByEmailAndPassword(
+        email,
+        "wrongPass#word32"
+      );
+
+      expect(user).toBeNull();
+
+      let user2 = await userGateway.getUserByEmailAndPassword(
+        "waseem@gmailnott.com",
+        password
+      );
+
+      expect(user2).toBeNull();
     });
   });
 
