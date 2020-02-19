@@ -1,7 +1,7 @@
 import AuthInteractor from "..";
 import UserDBGateway from "../../../database/UserDBGateway";
 import EMailer from "../../mail";
-import { TokenExpired } from "../../../constants/errors";
+import { TokenExpiredOrInvalid } from "../../../constants/errors";
 jest.mock("../../../database/UserDBGateway");
 jest.mock("../../mail");
 
@@ -29,7 +29,7 @@ describe("activateUser", () => {
       try {
         await authInteractor.activateUser(invalidToken);
       } catch (e) {
-        expect(e).toMatch(TokenExpired);
+        expect(e).toMatch(TokenExpiredOrInvalid);
       }
   });
 

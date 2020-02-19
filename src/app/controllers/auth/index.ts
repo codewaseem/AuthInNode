@@ -1,6 +1,6 @@
 import validator from "validator";
 // eslint-disable-next-line no-unused-vars
-import { UserDBGateway, SignUpData } from "../../interfaces";
+import { UserDBGateway, SignUpData, User } from "../../interfaces";
 import EMailer from "../mail";
 import TokenController from "../tokens";
 import {
@@ -8,35 +8,71 @@ import {
   UserAlreadyExists,
   InvalidName,
   InvalidEmail,
-  TokenExpired,
+  TokenExpiredOrInvalid,
+  EmailAndPasswordMismatch,
 } from "../../constants/errors";
 import { LoginStrategy } from "../../constants";
 
 class AuthInteractor {
-  activateUser(token: string) {
-    try {
-      let userData = TokenController.verify(token) as SignUpData;
-      if (
-        !userData ||
-        typeof userData != "object" ||
-        !userData.email ||
-        !userData.name ||
-        !userData.password
-      )
-        throw TokenExpired;
-
-      this.userDbGateway.addUser({
-        ...userData,
-        loginStrategy: LoginStrategy.Local,
-      });
-    } catch (e) {
-      throw TokenExpired;
-    }
-  }
   private userDbGateway: UserDBGateway;
 
   constructor(userDbGateway: UserDBGateway) {
     this.userDbGateway = userDbGateway;
+  }
+
+  async login(
+    email: string,
+    password: string
+  ): Promise<{ user: User; token: string }> {
+    let normalizedEmail = validator.normalizeEmail(email) || "";
+    this.validateEmail(normalizedEmail);
+    this.validatePassword(password);
+
+    let user = await this.userDbGateway.getUserByEmailAndPassword(
+      normalizedEmail,
+      password
+    );
+
+    if (!user) throw EmailAndPasswordMismatch;
+
+    return {
+      user,
+      token: TokenController.generateToken(
+        {
+          userId: user.id,
+        },
+        { expiresIn: "7d" }
+      ),
+    };
+  }
+
+  async activateUser(token: string): Promise<void> {
+    try {
+      let userData = this.verifyToken(token);
+      this.saveUserToDB(userData);
+    } catch (e) {
+      throw TokenExpiredOrInvalid;
+    }
+  }
+
+  private async saveUserToDB(userData: SignUpData) {
+    await this.userDbGateway.addUser({
+      ...userData,
+      loginStrategy: LoginStrategy.Local,
+    });
+  }
+
+  private verifyToken(token: string) {
+    let userData = TokenController.verify(token) as SignUpData;
+    if (
+      !userData ||
+      typeof userData != "object" ||
+      !userData.email ||
+      !userData.name ||
+      !userData.password
+    )
+      throw TokenExpiredOrInvalid;
+    return userData;
   }
 
   async signup(signUpData: SignUpData): Promise<void> {
