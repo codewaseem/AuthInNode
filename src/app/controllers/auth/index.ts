@@ -14,6 +14,7 @@ import AuthDataValidator from "./AuthDataValidator";
 class AuthInteractor {
   private userDbGateway: UserDBGateway;
   private inputValidator: AuthDataValidator;
+
   constructor(userDbGateway: UserDBGateway) {
     this.userDbGateway = userDbGateway;
     this.inputValidator = new AuthDataValidator();
