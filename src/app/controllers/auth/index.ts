@@ -25,16 +25,15 @@ class AuthInteractor {
     password: string
   ): Promise<{ user: User; token: string }> {
     let normalizedEmail = validator.normalizeEmail(email) || "";
-    this.validateEmail(normalizedEmail);
-    this.validatePassword(password);
-
-    let user = await this.userDbGateway.getUserByEmailAndPassword(
+    this.validateLoginData(normalizedEmail, password);
+    let user = await this.getUserWithEmailAndPassword(
       normalizedEmail,
       password
     );
+    return this.generateLoginData(user);
+  }
 
-    if (!user) throw EmailAndPasswordMismatch;
-
+  private generateLoginData(user: User): { user: User; token: string } {
     return {
       user,
       token: TokenController.generateToken(
@@ -44,6 +43,23 @@ class AuthInteractor {
         { expiresIn: "7d" }
       ),
     };
+  }
+
+  private async getUserWithEmailAndPassword(
+    normalizedEmail: string,
+    password: string
+  ) {
+    let user = await this.userDbGateway.getUserByEmailAndPassword(
+      normalizedEmail,
+      password
+    );
+    if (!user) throw EmailAndPasswordMismatch;
+    return user;
+  }
+
+  private validateLoginData(normalizedEmail: string, password: string) {
+    this.validateEmail(normalizedEmail);
+    this.validatePassword(password);
   }
 
   async activateUser(token: string): Promise<void> {
