@@ -7,7 +7,6 @@ jest.mock("../../../database/UserDBGateway");
 let userDbGateway = new UserDBGateway();
 
 let testEmail = "codewaseem@gmail.com";
-let testPassword = "AtestP@55Word";
 
 userDbGateway.getUserByEmail = jest.fn((email) => {
   if (email == testEmail) {
