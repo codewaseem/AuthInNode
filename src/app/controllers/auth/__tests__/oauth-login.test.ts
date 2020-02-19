@@ -1,10 +1,7 @@
 import AuthInteractor from "..";
-import UserDBGateway from "../../../database/UserDBGateway";
 import { InvalidUserData } from "../../../constants/errors";
 import { LoginStrategy } from "../../../constants";
-jest.mock("../../../database/UserDBGateway");
-
-let userDbGateway = new UserDBGateway();
+import userDbGateway from "../mocks/userDbGateway";
 
 let testEmail = "codewaseem@gmail.com";
 

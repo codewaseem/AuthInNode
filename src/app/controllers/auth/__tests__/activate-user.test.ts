@@ -1,11 +1,8 @@
 import AuthInteractor from "..";
-import UserDBGateway from "../../../database/UserDBGateway";
 import EMailer from "../../mail";
 import { TokenExpiredOrInvalid } from "../../../constants/errors";
-jest.mock("../../../database/UserDBGateway");
+import userDbGateway from "../mocks/userDbGateway";
 jest.mock("../../mail");
-
-let userDbGateway = new UserDBGateway();
 
 let invalidTokens = [
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNvZGV3YXNlZW1AZ21haWwuY29tIiwibmFtZSI6ImJvYiBtYXJ0aW4iLCJwYXNzd29yZCI6ImtsamFmQDEyNkwiLCJsb2dpblN0cmF0ZWd5IjoiTG9jYWwiLCJpYXQiOjE1ODIwMzk4ODYsImV4cCI6MTU4MjA0MDc4Nn0.pJPnxX0VDF56MMH8gpp-ggMVzqh9YLkUBdnyK9-yQrU",
@@ -19,6 +16,7 @@ describe("activateUser", () => {
   beforeEach(() => {
     authInteractor = new AuthInteractor(userDbGateway);
   });
+
   test("activateUser should exists", () => {
     expect(authInteractor.activateUser).toBeDefined();
   });

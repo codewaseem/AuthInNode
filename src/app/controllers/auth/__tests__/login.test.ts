@@ -1,14 +1,11 @@
 import AuthInteractor from "..";
-import UserDBGateway from "../../../database/UserDBGateway";
 import {
   EmailAndPasswordMismatch,
   InvalidEmail,
   InvalidPassword,
 } from "../../../constants/errors";
-// eslint-disable-next-line no-unused-vars
-import { User, SignUpData } from "../../../interfaces";
-jest.mock("../../../database/UserDBGateway");
-let userDbGateway = new UserDBGateway();
+import userDbGateway from "../mocks/userDbGateway";
+
 let testEmail = "codewaseem@gmail.com";
 let testPassword = "AtestP@55Word";
 

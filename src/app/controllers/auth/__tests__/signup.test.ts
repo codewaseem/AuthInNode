@@ -1,8 +1,6 @@
 import AuthInteractor from "..";
 import { sample } from "lodash";
-import UserDBGateway from "../../../database/UserDBGateway";
 import EMailer from "../../mail";
-jest.mock("../../../database/UserDBGateway");
 jest.mock("../../mail");
 // eslint-disable-next-line no-unused-vars
 import { User } from "../../../interfaces";
@@ -12,8 +10,7 @@ import {
   InvalidPassword,
   UserAlreadyExists,
 } from "../../../constants/errors";
-
-let userDbGateway = new UserDBGateway();
+import userDbGateway from "../mocks/userDbGateway";
 
 let testsData = {
   goodEmails: ["waseem@gmail.com", "waseem76429@gmail.com"],
