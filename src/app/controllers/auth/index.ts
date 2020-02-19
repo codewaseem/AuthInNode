@@ -23,7 +23,7 @@ class AuthInteractor {
   async oAuthLogin(
     signUpData: OAuthData
   ): Promise<{ user: User; token: string }> {
-    let normalizedEmail = validator.normalizeEmail(signUpData.email) || "";
+    let normalizedEmail = validator.normalizeEmail(signUpData.email) as string;
     let name = this.sanitizeName(signUpData.name);
     this.validateOAuthData(normalizedEmail, name, signUpData);
 
@@ -39,7 +39,7 @@ class AuthInteractor {
     email: string,
     password: string
   ): Promise<{ user: User; token: string }> {
-    let normalizedEmail = validator.normalizeEmail(email) || "";
+    let normalizedEmail = validator.normalizeEmail(email) as string;
     this.inputValidator.validateLoginData(normalizedEmail, password);
     let user = await this.getUserWithEmailAndPassword(
       normalizedEmail,
@@ -59,7 +59,7 @@ class AuthInteractor {
 
   async signup(signUpData: SignUpData): Promise<void> {
     let sanitizedName = this.sanitizeName(signUpData.name);
-    let normalizedEmail = validator.normalizeEmail(signUpData.email) || "";
+    let normalizedEmail = validator.normalizeEmail(signUpData.email) as string;
 
     await this.checkForExistingUser(normalizedEmail);
 

@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import { UserDBGateway, SignUpData, User } from "../interfaces";
+import { UserDBGateway, SignUpData, User } from "../../app/interfaces";
 import UserModel from "./models/UserModel";
 
 export default class UserGateway implements UserDBGateway {
