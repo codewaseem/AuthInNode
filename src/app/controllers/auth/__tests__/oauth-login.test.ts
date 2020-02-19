@@ -21,21 +21,21 @@ userDbGateway.addUser = jest.fn((data) => {
   return Promise.resolve({ ...data, id: "1" } as any);
 });
 
-describe("createAndLogin", () => {
+describe("oAuthLogin", () => {
   let authInteractor: AuthInteractor;
 
   beforeEach(() => {
     authInteractor = new AuthInteractor(userDbGateway);
   });
 
-  test("createAndLogin should exists", () => {
-    expect(authInteractor.createAndLogin).toBeDefined();
+  test("oAuthLogin should exists", () => {
+    expect(authInteractor.oAuthLogin).toBeDefined();
   });
 
-  test("createAndLogin should validate input data and throw error if invalid", async () => {
+  test("oAuthLogin should validate input data and throw error if invalid", async () => {
     expect.assertions(1);
     try {
-      await authInteractor.createAndLogin({
+      await authInteractor.oAuthLogin({
         email: "falksd",
         name: "waseem ahmed",
         loginStrategy: LoginStrategy.Google,
@@ -45,9 +45,9 @@ describe("createAndLogin", () => {
     }
   });
 
-  test("createAndLogin: existing user should be logged in", async () => {
+  test("oAuthLogin: existing user should be logged in", async () => {
     expect.assertions(1);
-    let data = await authInteractor.createAndLogin({
+    let data = await authInteractor.oAuthLogin({
       email: testEmail,
       name: "Test Name",
       loginStrategy: LoginStrategy.Google,
@@ -60,9 +60,9 @@ describe("createAndLogin", () => {
     });
   });
 
-  test("createAndLogin: if user does not exists, new  user should be created and logged in", async () => {
+  test("oAuthLogin: if user does not exists, new  user should be created and logged in", async () => {
     expect.assertions(1);
-    let data = await authInteractor.createAndLogin({
+    let data = await authInteractor.oAuthLogin({
       email: "newemail@gmai.com",
       name: "New Name",
       loginStrategy: LoginStrategy.Facebook,
@@ -71,6 +71,7 @@ describe("createAndLogin", () => {
       user: expect.objectContaining({
         email: "newemail@gmai.com",
         name: "New Name",
+        loginStrategy: LoginStrategy.Facebook,
       }),
       token: expect.any(String),
     });
