@@ -30,3 +30,7 @@ declare interface UserDBGateway {
     password: string
   ): Promise<User | null>;
 }
+
+declare interface AuthMailer {
+  sendSignUpConfirmation(to: string, token: string): Promise<any>;
+}

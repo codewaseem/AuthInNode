@@ -1,7 +1,5 @@
 import AuthInteractor from "..";
 import { sample } from "lodash";
-import EMailer from "../../mail";
-jest.mock("../../mail");
 // eslint-disable-next-line no-unused-vars
 import { User } from "../../../interfaces";
 import {
@@ -11,6 +9,7 @@ import {
   UserAlreadyExists,
 } from "../../../constants/errors";
 import userDbGateway from "../mocks/userDbGateway";
+import AuthMailer from "../mocks/AuthMailer";
 
 let testsData = {
   goodEmails: ["waseem@gmail.com", "waseem76429@gmail.com"],
@@ -24,7 +23,10 @@ let testsData = {
 describe("AuthInteractor: signup with email and password", () => {
   let authInteractor: AuthInteractor;
   beforeEach(() => {
-    authInteractor = new AuthInteractor(userDbGateway);
+    authInteractor = new AuthInteractor({
+      userDbGateway,
+      authMailer: AuthMailer,
+    });
   });
 
   test("signup: should throw an error if email is invalid", async () => {
@@ -32,9 +34,9 @@ describe("AuthInteractor: signup with email and password", () => {
     for (let badEmail of testsData.badEmails)
       try {
         await authInteractor.signup({
-          email: sample(badEmail) || "",
-          name: sample(testsData.goodNames) || "",
-          password: sample(testsData.goodPasswords) || "",
+          email: sample(badEmail) as string,
+          name: sample(testsData.goodNames) as string,
+          password: sample(testsData.goodPasswords) as string,
         });
       } catch (e) {
         expect(e).toMatch(InvalidEmail);
@@ -46,9 +48,9 @@ describe("AuthInteractor: signup with email and password", () => {
     for (let badName of testsData.badNames)
       try {
         await authInteractor.signup({
-          email: sample(testsData.goodEmails) || "",
+          email: sample(testsData.goodEmails) as string,
           name: badName,
-          password: sample(testsData.goodPasswords) || "",
+          password: sample(testsData.goodPasswords) as string,
         });
       } catch (e) {
         expect(e).toMatch(InvalidName);
@@ -61,8 +63,8 @@ describe("AuthInteractor: signup with email and password", () => {
     for (let badPassword of testsData.badPasswords)
       try {
         await authInteractor.signup({
-          email: sample(testsData.goodEmails) || "",
-          name: sample(testsData.goodNames) || "",
+          email: sample(testsData.goodEmails) as string,
+          name: sample(testsData.goodNames) as string,
           password: badPassword,
         });
       } catch (e) {
@@ -84,7 +86,7 @@ describe("AuthInteractor: signup with email and password", () => {
       await authInteractor.signup({
         email: "signedupuser@email.com",
         name: "Signed Up Already",
-        password: sample(testsData.goodPasswords) || "",
+        password: sample(testsData.goodPasswords) as string,
       });
     } catch (e) {
       expect(e).toMatch(UserAlreadyExists);
@@ -96,12 +98,12 @@ describe("AuthInteractor: signup with email and password", () => {
     let email = "codewaseem@gmail.com";
     await authInteractor.signup({
       email,
-      name: sample(testsData.goodNames) || "",
-      password: sample(testsData.goodPasswords) || "",
+      name: sample(testsData.goodNames) as string,
+      password: sample(testsData.goodPasswords) as string,
     });
 
-    expect(EMailer.sendSignUpConfirmation).toHaveBeenCalled();
-    expect(EMailer.sendSignUpConfirmation).toHaveBeenCalledWith(
+    expect(AuthMailer.sendSignUpConfirmation).toHaveBeenCalled();
+    expect(AuthMailer.sendSignUpConfirmation).toHaveBeenCalledWith(
       email,
       expect.any(String)
     );

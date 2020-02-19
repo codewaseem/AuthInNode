@@ -1,7 +1,16 @@
 import validator from "validator";
-// eslint-disable-next-line no-unused-vars
-import { UserDBGateway, SignUpData, User, OAuthData } from "../../interfaces";
-import EMailer from "../mail";
+import {
+  // eslint-disable-next-line no-unused-vars
+  UserDBGateway,
+  // eslint-disable-next-line no-unused-vars
+  SignUpData,
+  // eslint-disable-next-line no-unused-vars
+  User,
+  // eslint-disable-next-line no-unused-vars
+  OAuthData,
+  // eslint-disable-next-line no-unused-vars
+  AuthMailer,
+} from "../../interfaces";
 import TokenController from "../tokens";
 import {
   UserAlreadyExists,
@@ -14,9 +23,17 @@ import AuthDataValidator from "./AuthDataValidator";
 class AuthInteractor {
   private userDbGateway: UserDBGateway;
   private inputValidator: AuthDataValidator;
+  private authMailer: AuthMailer;
 
-  constructor(userDbGateway: UserDBGateway) {
+  constructor({
+    userDbGateway,
+    authMailer,
+  }: {
+    userDbGateway: UserDBGateway;
+    authMailer: AuthMailer;
+  }) {
     this.userDbGateway = userDbGateway;
+    this.authMailer = authMailer;
     this.inputValidator = new AuthDataValidator();
   }
 
@@ -150,7 +167,7 @@ class AuthInteractor {
       name,
       password,
     });
-    await EMailer.sendSignUpConfirmation(email, token);
+    await this.authMailer.sendSignUpConfirmation(email, token);
   }
 
   private async checkForExistingUser(normalizedEmail: string) {

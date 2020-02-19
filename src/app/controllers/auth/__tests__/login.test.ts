@@ -5,6 +5,7 @@ import {
   InvalidPassword,
 } from "../../../constants/errors";
 import userDbGateway from "../mocks/userDbGateway";
+import AuthMailer from "../mocks/AuthMailer";
 
 let testEmail = "codewaseem@gmail.com";
 let testPassword = "AtestP@55Word";
@@ -23,7 +24,10 @@ describe("login", () => {
   let authInteractor: AuthInteractor;
 
   beforeEach(() => {
-    authInteractor = new AuthInteractor(userDbGateway);
+    authInteractor = new AuthInteractor({
+      userDbGateway,
+      authMailer: AuthMailer,
+    });
   });
   test("login method should exist", async () => {
     expect(authInteractor.login).toBeDefined();

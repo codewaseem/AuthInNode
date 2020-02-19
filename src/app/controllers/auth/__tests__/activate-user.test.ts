@@ -1,8 +1,7 @@
 import AuthInteractor from "..";
-import EMailer from "../../mail";
 import { TokenExpiredOrInvalid } from "../../../constants/errors";
 import userDbGateway from "../mocks/userDbGateway";
-jest.mock("../../mail");
+import AuthMailer from "../mocks/AuthMailer";
 
 let invalidTokens = [
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNvZGV3YXNlZW1AZ21haWwuY29tIiwibmFtZSI6ImJvYiBtYXJ0aW4iLCJwYXNzd29yZCI6ImtsamFmQDEyNkwiLCJsb2dpblN0cmF0ZWd5IjoiTG9jYWwiLCJpYXQiOjE1ODIwMzk4ODYsImV4cCI6MTU4MjA0MDc4Nn0.pJPnxX0VDF56MMH8gpp-ggMVzqh9YLkUBdnyK9-yQrU",
@@ -14,7 +13,10 @@ let invalidTokens = [
 describe("activateUser", () => {
   let authInteractor: AuthInteractor;
   beforeEach(() => {
-    authInteractor = new AuthInteractor(userDbGateway);
+    authInteractor = new AuthInteractor({
+      userDbGateway,
+      authMailer: AuthMailer,
+    });
   });
 
   test("activateUser should exists", () => {
@@ -39,7 +41,8 @@ describe("activateUser", () => {
       password: "AV3ry5tronGP@55",
     });
 
-    let token = (EMailer.sendSignUpConfirmation as jest.Mock).mock.calls[0][1];
+    let token = (AuthMailer.sendSignUpConfirmation as jest.Mock).mock
+      .calls[0][1];
 
     authInteractor.activateUser(token);
 
@@ -52,6 +55,4 @@ describe("activateUser", () => {
       })
     );
   });
-
-  test("some other random valid token should throw an error", async () => {});
 });
