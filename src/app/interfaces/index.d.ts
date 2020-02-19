@@ -8,6 +8,12 @@ declare interface SignUpData {
   loginStrategy?: string;
 }
 
+declare interface OAuthData {
+  email: string;
+  name: string;
+  loginStrategy: string;
+}
+
 declare interface User {
   id: string;
   email: string;

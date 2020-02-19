@@ -1,6 +1,6 @@
 import validator from "validator";
 // eslint-disable-next-line no-unused-vars
-import { UserDBGateway, SignUpData, User } from "../../interfaces";
+import { UserDBGateway, SignUpData, User, OAuthData } from "../../interfaces";
 import EMailer from "../mail";
 import TokenController from "../tokens";
 import {
@@ -10,6 +10,8 @@ import {
   InvalidEmail,
   TokenExpiredOrInvalid,
   EmailAndPasswordMismatch,
+  InvalidUserData,
+  InvalidLoginStrategy,
 } from "../../constants/errors";
 import { LoginStrategy } from "../../constants";
 
@@ -18,6 +20,37 @@ class AuthInteractor {
 
   constructor(userDbGateway: UserDBGateway) {
     this.userDbGateway = userDbGateway;
+  }
+
+  async createAndLogin(
+    signUpData: OAuthData
+  ): Promise<{ user: User; token: string }> {
+    let normalizedEmail = validator.normalizeEmail(signUpData.email) || "";
+    let name = this.sanitizeName(signUpData.name);
+    this.validateOAuthData(normalizedEmail, name, signUpData.loginStrategy);
+
+    let user = await this.userDbGateway.getUserByEmail(normalizedEmail);
+    if (user) return this.generateLoginData(user);
+
+    let newUser = await this.saveUserToDB({ ...signUpData, password: "" });
+
+    return this.generateLoginData(newUser);
+  }
+
+  private validateOAuthData(
+    normalizedEmail: string,
+    name: string,
+    loginStrategy: string
+  ) {
+    try {
+      this.validateEmail(normalizedEmail);
+      this.validateName(name);
+      if (!loginStrategy || loginStrategy == LoginStrategy.Local) {
+        throw InvalidLoginStrategy;
+      }
+    } catch (e) {
+      throw InvalidUserData;
+    }
   }
 
   async login(
@@ -72,7 +105,7 @@ class AuthInteractor {
   }
 
   private async saveUserToDB(userData: SignUpData) {
-    await this.userDbGateway.addUser({
+    return await this.userDbGateway.addUser({
       ...userData,
       loginStrategy: LoginStrategy.Local,
     });
