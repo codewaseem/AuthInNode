@@ -6,3 +6,4 @@ export const TokenExpiredOrInvalid = "Token expired or invalid.";
 export const EmailAndPasswordMismatch = "Email and password do not match.";
 export const InvalidUserData = "Invalid user data.";
 export const InvalidLoginStrategy = "Invalid login strategy for this use case.";
+export const FailedToSaveUserError = "Failed to save user";

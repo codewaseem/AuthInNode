@@ -16,6 +16,7 @@ import {
   UserAlreadyExists,
   TokenExpiredOrInvalid,
   EmailAndPasswordMismatch,
+  FailedToSaveUserError,
 } from "../../../constants/errors";
 import { LoginStrategy } from "../../../constants";
 import AuthDataValidator from "./AuthDataValidator";
@@ -66,12 +67,8 @@ class AuthInteractor {
   }
 
   async activateUser(token: string): Promise<void> {
-    try {
-      let userData = this.verifyToken(token);
-      this.saveUserToDB(userData);
-    } catch (e) {
-      throw TokenExpiredOrInvalid;
-    }
+    let userData = this.verifyToken(token);
+    this.saveUserToDB(userData);
   }
 
   async signup(signUpData: SignUpData): Promise<void> {
@@ -94,7 +91,11 @@ class AuthInteractor {
   }
 
   private async createNewUser(signUpData: OAuthData) {
-    return await this.saveUserToDB({ ...signUpData, password: "" });
+    return await this.saveUserToDB({ ...signUpData, password: "" }).catch(
+      () => {
+        throw FailedToSaveUserError;
+      }
+    );
   }
 
   private async getExistingUser(normalizedEmail: string) {
@@ -137,11 +138,15 @@ class AuthInteractor {
     return user;
   }
 
-  private async saveUserToDB(userData: SignUpData) {
-    return await this.userDbGateway.addUser({
-      ...userData,
-      loginStrategy: userData.loginStrategy || LoginStrategy.Local,
-    });
+  private async saveUserToDB(userData: SignUpData): Promise<User> {
+    try {
+      return await this.userDbGateway.addUser({
+        ...userData,
+        loginStrategy: userData.loginStrategy || LoginStrategy.Local,
+      });
+    } catch (e) {
+      throw FailedToSaveUserError;
+    }
   }
 
   private verifyToken(token: string) {
