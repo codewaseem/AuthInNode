@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { Request, Response } from "express";
 import { authInteractor } from "../../setup";
-import { ResponseStatus } from "../constants";
+import { ResponseStatus } from "../../../constants";
 
 export async function signUpController(req: Request, res: Response) {
   let { email, name, password } = req.body;

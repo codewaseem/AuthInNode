@@ -5,8 +5,8 @@ import {
   InvalidEmail,
   InvalidUserData,
   InvalidLoginStrategy,
-} from "../../constants/errors";
-import { LoginStrategy } from "../../constants";
+} from "../../../constants/errors";
+import { LoginStrategy } from "../../../constants";
 
 export default class AuthDataValidator {
   validateOAuthData(

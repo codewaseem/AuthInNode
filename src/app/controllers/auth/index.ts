@@ -16,8 +16,8 @@ import {
   UserAlreadyExists,
   TokenExpiredOrInvalid,
   EmailAndPasswordMismatch,
-} from "../../constants/errors";
-import { LoginStrategy } from "../../constants";
+} from "../../../constants/errors";
+import { LoginStrategy } from "../../../constants";
 import AuthDataValidator from "./AuthDataValidator";
 
 class AuthInteractor {

@@ -1,6 +1,7 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import DBConnector from "../DBConnector";
 import UserGateway from "../UserDBGateway";
+import { UserAlreadyExists } from "../../../constants/errors";
 
 const mongoServer = new MongoMemoryServer();
 let dbConnector = new DBConnector();
@@ -48,6 +49,24 @@ describe("User Entity", () => {
       expect(user.name).toBe("Waseem Ahmed");
 
       id = user.id;
+    });
+
+    test("addUser(): should throw an error when adding same user twice", async () => {
+      expect.assertions(1);
+      try {
+        await userGateway.addUser({
+          name,
+          email,
+          password,
+        });
+        await userGateway.addUser({
+          name,
+          email,
+          password,
+        });
+      } catch (e) {
+        expect(e).toMatch(UserAlreadyExists);
+      }
     });
 
     test("getUserById(): should be able to get back the user by id", async () => {

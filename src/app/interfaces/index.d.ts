@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import { LoginStrategy } from "../constants";
+import { LoginStrategy } from "../../constants";
 
 declare interface SignUpData {
   email: string;

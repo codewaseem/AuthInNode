@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 // eslint-disable-next-line no-unused-vars
-import { LoginStrategy } from "../../../app/constants";
+import { LoginStrategy } from "../../../constants";
 
 const UserSchema = new mongoose.Schema(
   {

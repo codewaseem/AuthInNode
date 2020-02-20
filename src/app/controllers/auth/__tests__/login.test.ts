@@ -3,7 +3,7 @@ import {
   EmailAndPasswordMismatch,
   InvalidEmail,
   InvalidPassword,
-} from "../../../constants/errors";
+} from "../../../../constants/errors";
 import userDbGateway from "../mocks/userDbGateway";
 import AuthMailer from "../mocks/AuthMailer";
 

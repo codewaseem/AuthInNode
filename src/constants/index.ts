@@ -4,3 +4,8 @@ export const enum LoginStrategy {
   "Facebook" = "Facebook",
   "GitHub" = "GitHub",
 }
+
+export const enum ResponseStatus {
+  "Success" = "success",
+  "Error" = "error",
+}
