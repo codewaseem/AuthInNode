@@ -2,7 +2,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node -r ts-node/register ./src/index.ts",
+    "start": "node -r ts-node/register ./src/main/index.ts",
     "start:in": "node -r ts-node/register",
     "start:watch": "nodemon",
     "start:inspect": "node --inspect=5858 -r ts-node/register ./src/index.ts",
