@@ -46,41 +46,27 @@ describe("Auth route:", () => {
 
   describe("/auth/signup endpoint", () => {
     test("invalid content type (data other than json) should respond with 415 error", async () => {
-      let emptyDataResponse = await request(app)
-        .post(signupEndpoint)
-        .send();
-
+      let emptyDataResponse = await makeEmptyDataRequest(signupEndpoint);
       expect(emptyDataResponse.status).toBe(415);
 
-      let stringDataResponse = await request(app)
-        .post(signupEndpoint)
-        .send("text");
+      let stringDataResponse = await makeTextDataRequest(signupEndpoint);
 
       expect(stringDataResponse.status).toBe(415);
     });
 
     test("should respond with 422, given invalid email", async () => {
-      let badEmailResponse = await request(app)
-        .post(signupEndpoint)
-        .send({
-          email: sample(testsData.badEmails),
-        } as SignUpData);
-
-      expect(badEmailResponse.status).toBe(422);
-      expect(badEmailResponse.body).toMatchObject({
-        status: ResponseStatus.Error,
-        message: InvalidEmail,
+      let badEmailResponse = await signUpRequestWithBadEmail(signupEndpoint);
+      expect(badEmailResponse).toMatchObject({
+        status: 422,
+        body: {
+          status: ResponseStatus.Error,
+          message: InvalidEmail,
+        },
       });
     });
 
     test("should respond with 422, given invalid name", async () => {
-      let badNameResponse = await request(app)
-        .post(signupEndpoint)
-        .send({
-          email: sample(testsData.goodEmails),
-          name: sample(testsData.badNames),
-          password: sample(testsData.goodPasswords),
-        });
+      let badNameResponse = await signUpRequestWithBadName(signupEndpoint);
 
       expect(badNameResponse).toMatchObject({
         status: 422,
@@ -92,13 +78,9 @@ describe("Auth route:", () => {
     });
 
     test("should respond with 422, given invalid password", async () => {
-      let badPasswordResponse = await request(app)
-        .post(signupEndpoint)
-        .send({
-          email: sample(testsData.goodEmails),
-          name: sample(testsData.goodNames),
-          password: sample(testsData.badPasswords),
-        });
+      let badPasswordResponse = await signUpRequestWithBadPassword(
+        signupEndpoint
+      );
 
       expect(badPasswordResponse).toMatchObject({
         status: 422,
@@ -110,13 +92,7 @@ describe("Auth route:", () => {
     });
 
     test("should respond with 200 when data is valid", async () => {
-      let response = await request(app)
-        .post("/auth/signup")
-        .send({
-          email: "codewaseem@gmail.com",
-          password: "ATestP@5SW0rd",
-          name: "waseem ahmed",
-        });
+      let response = await signUpRequestWithValidData();
       expect(response.body).toMatchObject({
         status: ResponseStatus.Success,
         message: expect.stringContaining(`codewaseem@gmail.com`),
@@ -126,12 +102,7 @@ describe("Auth route:", () => {
 
   describe("/auth/activate endpoint", () => {
     test("should respond with 400, given invalid token", async () => {
-      let token = sample(invalidTokens);
-      let response = await request(app)
-        .post(activateEndpoint)
-        .send({
-          token,
-        });
+      let response = await activateRequestWithBadToken(activateEndpoint);
 
       expect(response).toMatchObject({
         status: 400,
@@ -140,9 +111,10 @@ describe("Auth route:", () => {
     });
 
     test("should respond with 200, given valid token", async () => {
-      let token = await signUp(signupEndpoint);
-
-      let response = await activate(activateEndpoint, token);
+      let response = await activateRequestWithGoodToken(
+        signupEndpoint,
+        activateEndpoint
+      );
 
       expect(response).toMatchObject({
         status: 200,
@@ -153,13 +125,7 @@ describe("Auth route:", () => {
     });
 
     test("should respond with an error when existing users tries to sign up", async () => {
-      let response = await request(app)
-        .post(signupEndpoint)
-        .send({
-          email: "codewaseem@gmail.com",
-          password: "ATestP@5SW0rd",
-          name: "waseem ahmed",
-        });
+      let response = await signUpRequestWithValidData();
 
       expect(response).toMatchObject({
         status: 400,
@@ -186,12 +152,7 @@ describe("Auth route:", () => {
 
   describe("/auth/login endpoint", () => {
     test("invalid email and password should respond with 415", async () => {
-      let response = await request(app)
-        .post(loginEndpiont)
-        .send({
-          email: sample(testsData.badEmails),
-          password: sample(testsData.goodPasswords),
-        });
+      let response = await loginRequestWithBadEmail(loginEndpiont);
 
       expect(response).toMatchObject({
         status: 422,
@@ -201,12 +162,7 @@ describe("Auth route:", () => {
         },
       });
 
-      let response2 = await request(app)
-        .post(loginEndpiont)
-        .send({
-          email: sample(testsData.goodEmails),
-          password: sample(testsData.badPasswords),
-        });
+      let response2 = await loginRequestWithBadPassword(loginEndpiont);
 
       expect(response2).toMatchObject({
         status: 422,
@@ -218,12 +174,7 @@ describe("Auth route:", () => {
     });
 
     test("wrong username and password should respond with 400", async () => {
-      let response = await request(app)
-        .post(loginEndpiont)
-        .send({
-          email: "somerandome@gmail.com",
-          password: "lkdf&flfN455",
-        });
+      let response = await loginRequestWithWrongEmailAndPassword(loginEndpiont);
 
       expect(response).toMatchObject({
         status: 400,
@@ -234,12 +185,7 @@ describe("Auth route:", () => {
     });
 
     test("valid email and password, should get the user info and login token back", async () => {
-      let response = await request(app)
-        .post(loginEndpiont)
-        .send({
-          email: "codewaseem@gmail.com",
-          password: "ATestP@5SW0rd",
-        });
+      let response = await loginRequestWithValidData(loginEndpiont);
 
       expect(response).toMatchObject({
         status: 200,
@@ -258,6 +204,111 @@ describe("Auth route:", () => {
     await stopDB();
   });
 });
+
+async function loginRequestWithValidData(loginEndpiont: string) {
+  return await request(app)
+    .post(loginEndpiont)
+    .send({
+      email: "codewaseem@gmail.com",
+      password: "ATestP@5SW0rd",
+    });
+}
+
+async function loginRequestWithWrongEmailAndPassword(loginEndpiont: string) {
+  return await request(app)
+    .post(loginEndpiont)
+    .send({
+      email: "somerandome@gmail.com",
+      password: "lkdf&flfN455",
+    });
+}
+
+async function loginRequestWithBadPassword(loginEndpiont: string) {
+  return await request(app)
+    .post(loginEndpiont)
+    .send({
+      email: sample(testsData.goodEmails),
+      password: sample(testsData.badPasswords),
+    });
+}
+
+async function loginRequestWithBadEmail(loginEndpiont: string) {
+  return await request(app)
+    .post(loginEndpiont)
+    .send({
+      email: sample(testsData.badEmails),
+      password: sample(testsData.goodPasswords),
+    });
+}
+
+async function activateRequestWithGoodToken(
+  signupEndpoint: string,
+  activateEndpoint: string
+) {
+  let token = await signUp(signupEndpoint);
+  let response = await activate(activateEndpoint, token);
+  return response;
+}
+
+async function activateRequestWithBadToken(activateEndpoint: string) {
+  let token = sample(invalidTokens);
+  let response = await request(app)
+    .post(activateEndpoint)
+    .send({
+      token,
+    });
+  return response;
+}
+
+async function signUpRequestWithValidData() {
+  return await request(app)
+    .post("/auth/signup")
+    .send({
+      email: "codewaseem@gmail.com",
+      password: "ATestP@5SW0rd",
+      name: "waseem ahmed",
+    });
+}
+
+async function signUpRequestWithBadPassword(signupEndpoint: string) {
+  return await request(app)
+    .post(signupEndpoint)
+    .send({
+      email: sample(testsData.goodEmails),
+      name: sample(testsData.goodNames),
+      password: sample(testsData.badPasswords),
+    });
+}
+
+async function signUpRequestWithBadName(signupEndpoint: string) {
+  return await request(app)
+    .post(signupEndpoint)
+    .send({
+      email: sample(testsData.goodEmails),
+      name: sample(testsData.badNames),
+      password: sample(testsData.goodPasswords),
+    });
+}
+
+async function signUpRequestWithBadEmail(signupEndpoint: string) {
+  return await request(app)
+    .post(signupEndpoint)
+    .send({
+      email: sample(testsData.badEmails),
+    });
+}
+
+async function makeTextDataRequest(signupEndpoint: string) {
+  return await request(app)
+    .post(signupEndpoint)
+    .send("text");
+}
+
+async function makeEmptyDataRequest(signupEndpoint: string) {
+  return await request(app)
+    .post(signupEndpoint)
+    .send();
+}
 
 async function activate(activateEndpoint: string, token: any) {
   return await request(app)
