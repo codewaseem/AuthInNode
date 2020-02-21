@@ -15,7 +15,6 @@ export async function signUpController(req: Request, res: Response) {
       message: `Hey ${name}, confirmation email has been sent to your email ${email}.`,
     });
   } catch (e) {
-    console.log(e);
     sendErrorResponse(res, {
       message: e,
     });
