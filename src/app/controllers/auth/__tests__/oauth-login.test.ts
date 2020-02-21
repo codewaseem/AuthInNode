@@ -1,5 +1,8 @@
 import AuthInteractor from "..";
-import { InvalidUserData } from "../../../../constants/errors";
+import {
+  InvalidUserData,
+  InvalidLoginStrategy,
+} from "../../../../constants/errors";
 import { LoginStrategy } from "../../../../constants";
 import userDbGateway from "../mocks/userDbGateway";
 import AuthMailer from "../mocks/AuthMailer";
@@ -75,5 +78,18 @@ describe("oAuthLogin", () => {
       }),
       token: expect.any(String),
     });
+  });
+
+  test("providing local login strategy should throw an error", async () => {
+    expect.assertions(1);
+    try {
+      await authInteractor.oAuthLogin({
+        email: "newemail@gmail.com",
+        name: "New Name",
+        loginStrategy: LoginStrategy.Local,
+      });
+    } catch (e) {
+      expect(e).toMatch(InvalidUserData);
+    }
   });
 });
