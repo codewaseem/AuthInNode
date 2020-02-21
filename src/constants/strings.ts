@@ -7,3 +7,6 @@ export const EmailAndPasswordMismatch = "Email and password do not match.";
 export const InvalidUserData = "Invalid user data.";
 export const InvalidLoginStrategy = "Invalid login strategy for this use case.";
 export const FailedToSaveUserError = "Failed to save user";
+export const UserDoesNotExists = "User does not exists";
+export const OnlyLocalUsersCanResetPassword =
+  "Only local users can request for password reset.";

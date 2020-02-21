@@ -6,6 +6,7 @@ type Mockify<T> = {
 };
 let AuthMailer: Mockify<AuthMailer> = {
   sendSignUpConfirmation: jest.fn(),
+  sendPasswordResetLink: jest.fn(),
 };
 
 export default AuthMailer as any;

@@ -33,4 +33,5 @@ declare interface UserDBGateway {
 
 declare interface AuthMailer {
   sendSignUpConfirmation(to: string, token: string): Promise<any>;
+  sendPasswordResetLink(to: string, token: string): Promise<any>;
 }

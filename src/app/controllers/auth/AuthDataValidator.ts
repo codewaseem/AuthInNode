@@ -61,4 +61,8 @@ export default class AuthDataValidator {
       throw InvalidEmail;
     }
   }
+
+  normalizeEmail(email: string): string {
+    return validator.normalizeEmail(email) as string;
+  }
 }

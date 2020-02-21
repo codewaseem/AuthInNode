@@ -1,4 +1,3 @@
-import validator from "validator";
 import {
   // eslint-disable-next-line no-unused-vars
   UserDBGateway,
@@ -17,6 +16,8 @@ import {
   TokenExpiredOrInvalid,
   EmailAndPasswordMismatch,
   FailedToSaveUserError,
+  UserDoesNotExists,
+  OnlyLocalUsersCanResetPassword,
 } from "../../../constants/strings";
 import { LoginStrategy } from "../../../constants";
 import AuthDataValidator from "./AuthDataValidator";
@@ -38,10 +39,32 @@ class AuthInteractor {
     this.inputValidator = new AuthDataValidator();
   }
 
+  async resetPasswordRequest(email: string) {
+    let normalizedEmail = this.inputValidator.normalizeEmail(email);
+    this.inputValidator.validateEmail(normalizedEmail);
+    let user = await this.userDbGateway.getUserByEmail(normalizedEmail);
+    if (!user) throw UserDoesNotExists;
+
+    if (user.loginStrategy != LoginStrategy.Local)
+      throw OnlyLocalUsersCanResetPassword;
+
+    let token = TokenController.generateToken(
+      {
+        userId: user.id,
+      },
+      {
+        expiresIn: "15m",
+      }
+    );
+    this.authMailer.sendPasswordResetLink(normalizedEmail, token);
+  }
+
   async oAuthLogin(
     signUpData: OAuthData
   ): Promise<{ user: User; token: string }> {
-    let normalizedEmail = validator.normalizeEmail(signUpData.email) as string;
+    let normalizedEmail = this.inputValidator.normalizeEmail(
+      signUpData.email
+    ) as string;
     let name = this.sanitizeName(signUpData.name);
     this.validateOAuthData(normalizedEmail, name, signUpData);
 
@@ -57,7 +80,7 @@ class AuthInteractor {
     email: string,
     password: string
   ): Promise<{ user: User; token: string }> {
-    let normalizedEmail = validator.normalizeEmail(email) as string;
+    let normalizedEmail = this.inputValidator.normalizeEmail(email) as string;
     this.inputValidator.validateLoginData(normalizedEmail, password);
     let user = await this.getUserWithEmailAndPassword(
       normalizedEmail,
@@ -73,7 +96,9 @@ class AuthInteractor {
 
   async signup(signUpData: SignUpData): Promise<void> {
     let sanitizedName = this.sanitizeName(signUpData.name);
-    let normalizedEmail = validator.normalizeEmail(signUpData.email) as string;
+    let normalizedEmail = this.inputValidator.normalizeEmail(
+      signUpData.email
+    ) as string;
 
     await this.checkForExistingUser(normalizedEmail);
 
