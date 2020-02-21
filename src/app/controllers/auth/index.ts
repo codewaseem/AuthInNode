@@ -67,8 +67,12 @@ class AuthInteractor {
   }
 
   async activateUser(token: string): Promise<void> {
-    let userData = this.verifyToken(token);
-    this.saveUserToDB(userData);
+    try {
+      let userData = this.verifyToken(token);
+      await this.saveUserToDB(userData);
+    } catch (e) {
+      throw FailedToSaveUserError;
+    }
   }
 
   async signup(signUpData: SignUpData): Promise<void> {
