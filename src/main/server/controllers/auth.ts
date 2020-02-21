@@ -32,6 +32,7 @@ export async function activateUserController(req: Request, res: Response) {
   } catch (e) {
     sendErrorResponse(res, {
       message: e,
+      statusCode: 400,
     });
   }
 }

@@ -67,12 +67,8 @@ class AuthInteractor {
   }
 
   async activateUser(token: string): Promise<void> {
-    try {
-      let userData = this.verifyToken(token);
-      await this.saveUserToDB(userData);
-    } catch (e) {
-      throw FailedToSaveUserError;
-    }
+    let userData = this.verifyToken(token);
+    await this.saveUserToDB(userData);
   }
 
   async signup(signUpData: SignUpData): Promise<void> {
@@ -154,16 +150,20 @@ class AuthInteractor {
   }
 
   private verifyToken(token: string) {
-    let userData = TokenController.verify(token) as SignUpData;
-    if (
-      !userData ||
-      typeof userData != "object" ||
-      !userData.email ||
-      !userData.name ||
-      !userData.password
-    )
+    try {
+      let userData = TokenController.verify(token) as SignUpData;
+      if (
+        !userData ||
+        typeof userData != "object" ||
+        !userData.email ||
+        !userData.name ||
+        !userData.password
+      )
+        throw TokenExpiredOrInvalid;
+      return userData;
+    } catch (e) {
       throw TokenExpiredOrInvalid;
-    return userData;
+    }
   }
 
   private async sendConfirmationEmail(
