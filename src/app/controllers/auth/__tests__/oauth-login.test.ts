@@ -1,8 +1,5 @@
 import AuthInteractor from "..";
-import {
-  InvalidUserData,
-  InvalidLoginStrategy,
-} from "../../../../constants/errors";
+import { InvalidUserData } from "../../../../constants/errors";
 import { LoginStrategy } from "../../../../constants";
 import userDbGateway from "../mocks/userDbGateway";
 import AuthMailer from "../mocks/AuthMailer";

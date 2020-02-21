@@ -1,5 +1,4 @@
 import AuthInteractor from "..";
-import { TokenExpiredOrInvalid } from "../../../../constants/errors";
 import userDbGateway from "../mocks/userDbGateway";
 import AuthMailer from "../mocks/AuthMailer";
 
