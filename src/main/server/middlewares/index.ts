@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
+import { sendErrorResponse } from "../helpers";
 
 export function onlyJSONContentType(
   req: Request,
@@ -20,7 +21,10 @@ export function handleValidatorErrors(
 ) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ error: errors.array()[0].msg });
+    return sendErrorResponse(res, {
+      message: errors.array()[0].msg,
+      statusCode: 422,
+    });
   }
   next();
 }
