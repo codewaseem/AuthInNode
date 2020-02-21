@@ -5,7 +5,7 @@ import {
   InvalidEmail,
   InvalidUserData,
   InvalidLoginStrategy,
-} from "../../../constants/errors";
+} from "../../../constants/strings";
 import { LoginStrategy } from "../../../constants";
 
 export default class AuthDataValidator {

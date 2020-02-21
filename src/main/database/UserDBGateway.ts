@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { UserDBGateway, SignUpData, User } from "../../app/interfaces";
 import UserModel from "./models/UserModel";
-import { UserAlreadyExists } from "../../constants/errors";
+import { UserAlreadyExists } from "../../constants/strings";
 
 export default class UserGateway implements UserDBGateway {
   async getUserByEmailAndPassword(

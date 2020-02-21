@@ -17,7 +17,7 @@ import {
   TokenExpiredOrInvalid,
   EmailAndPasswordMismatch,
   FailedToSaveUserError,
-} from "../../../constants/errors";
+} from "../../../constants/strings";
 import { LoginStrategy } from "../../../constants";
 import AuthDataValidator from "./AuthDataValidator";
 

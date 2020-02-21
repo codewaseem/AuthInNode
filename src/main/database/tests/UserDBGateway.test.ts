@@ -1,5 +1,5 @@
 import UserGateway from "../UserDBGateway";
-import { UserAlreadyExists } from "../../../constants/errors";
+import { UserAlreadyExists } from "../../../constants/strings";
 import { startDB, stopDB } from "./testDBConnector";
 
 describe("User Entity", () => {

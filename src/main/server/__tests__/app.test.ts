@@ -15,7 +15,7 @@ import {
   TokenExpiredOrInvalid,
   UserAlreadyExists,
   FailedToSaveUserError,
-} from "../../../constants/errors";
+} from "../../../constants/strings";
 
 jest.mock("../../mail");
 
@@ -38,6 +38,7 @@ let invalidTokens = [
 describe("Auth route:", () => {
   let signupEndpoint = `/auth/signup`;
   let activateEndpoint = `/auth/activate`;
+  let loginEndpiont = `/auth/login`;
 
   beforeAll(async () => {
     await startDB();
@@ -178,6 +179,76 @@ describe("Auth route:", () => {
         body: {
           status: ResponseStatus.Error,
           message: FailedToSaveUserError,
+        },
+      });
+    });
+  });
+
+  describe("/auth/login endpoint", () => {
+    test("invalid email and password should respond with 415", async () => {
+      let response = await request(app)
+        .post(loginEndpiont)
+        .send({
+          email: sample(testsData.badEmails),
+          password: sample(testsData.goodPasswords),
+        });
+
+      expect(response).toMatchObject({
+        status: 422,
+        body: {
+          status: ResponseStatus.Error,
+          message: InvalidEmail,
+        },
+      });
+
+      let response2 = await request(app)
+        .post(loginEndpiont)
+        .send({
+          email: sample(testsData.goodEmails),
+          password: sample(testsData.badPasswords),
+        });
+
+      expect(response2).toMatchObject({
+        status: 422,
+        body: {
+          status: ResponseStatus.Error,
+          message: InvalidPassword,
+        },
+      });
+    });
+
+    test("wrong username and password should respond with 400", async () => {
+      let response = await request(app)
+        .post(loginEndpiont)
+        .send({
+          email: "somerandome@gmail.com",
+          password: "lkdf&flfN455",
+        });
+
+      expect(response).toMatchObject({
+        status: 400,
+        body: {
+          status: ResponseStatus.Error,
+        },
+      });
+    });
+
+    test("valid email and password, should get the user info and login token back", async () => {
+      let response = await request(app)
+        .post(loginEndpiont)
+        .send({
+          email: "codewaseem@gmail.com",
+          password: "ATestP@5SW0rd",
+        });
+
+      expect(response).toMatchObject({
+        status: 200,
+        body: {
+          status: ResponseStatus.Success,
+          data: {
+            user: expect.any(Object),
+            token: expect.any(String),
+          },
         },
       });
     });

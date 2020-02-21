@@ -36,3 +36,17 @@ export async function activateUserController(req: Request, res: Response) {
     });
   }
 }
+
+export async function loginController(req: Request, res: Response) {
+  let { email, password } = req.body;
+  try {
+    let data = await authInteractor.login(email, password);
+    sendSuccessResponse(res, {
+      data,
+    });
+  } catch (e) {
+    sendErrorResponse(res, {
+      message: e,
+    });
+  }
+}

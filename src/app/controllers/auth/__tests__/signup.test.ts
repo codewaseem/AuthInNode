@@ -7,7 +7,7 @@ import {
   InvalidName,
   InvalidPassword,
   UserAlreadyExists,
-} from "../../../../constants/errors";
+} from "../../../../constants/strings";
 import userDbGateway from "../mocks/userDbGateway";
 import AuthMailer from "../mocks/AuthMailer";
 
