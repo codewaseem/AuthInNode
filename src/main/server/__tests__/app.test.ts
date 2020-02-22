@@ -38,12 +38,13 @@ const validLocalSignUpData = {
   password: "ATestP@5SW0rd",
   name: "waseem ahmed",
 };
+const newPassword = "AtestP@55";
 
-let signupEndpoint = `/auth/signup`;
-let activateEndpoint = `/auth/activate`;
-let loginEndpiont = `/auth/login`;
-let resetPasswordEndpoint = `/auth/reset-password`;
-let setNewPasswordEndpoint = `/auth/set-password`;
+const signupEndpoint = `/auth/signup`;
+const activateEndpoint = `/auth/activate`;
+const loginEndpiont = `/auth/login`;
+const resetPasswordEndpoint = `/auth/reset-password`;
+const setNewPasswordEndpoint = `/auth/set-password`;
 
 describe("Auth route:", () => {
   beforeAll(async () => {
@@ -62,7 +63,7 @@ describe("Auth route:", () => {
 
     test("should respond with 422, given invalid email", async () => {
       let badEmailResponse = await signUpRequestWithBadEmail();
-      expect(badEmailResponse).toMatchObject({
+      assertToMatchResponse(badEmailResponse, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -74,7 +75,7 @@ describe("Auth route:", () => {
     test("should respond with 422, given invalid name", async () => {
       let badNameResponse = await signUpRequestWithBadName();
 
-      expect(badNameResponse).toMatchObject({
+      assertToMatchResponse(badNameResponse, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -86,7 +87,7 @@ describe("Auth route:", () => {
     test("should respond with 422, given invalid password", async () => {
       let badPasswordResponse = await signUpRequestWithBadPassword();
 
-      expect(badPasswordResponse).toMatchObject({
+      assertToMatchResponse(badPasswordResponse, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -97,9 +98,12 @@ describe("Auth route:", () => {
 
     test("should respond with 200 when data is valid", async () => {
       let response = await makeSignUpRequest(validLocalSignUpData);
-      expect(response.body).toMatchObject({
-        status: ResponseStatus.Success,
-        message: expect.stringContaining(`codewaseem@gmail.com`),
+      assertToMatchResponse(response, {
+        status: 200,
+        body: {
+          status: ResponseStatus.Success,
+          message: expect.stringContaining(validLocalSignUpData.email),
+        },
       });
     });
   });
@@ -110,7 +114,7 @@ describe("Auth route:", () => {
         token: sample(invalidTokens),
       });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 400,
         body: { status: ResponseStatus.Error, message: TokenExpiredOrInvalid },
       });
@@ -120,7 +124,7 @@ describe("Auth route:", () => {
       let token = await signUpAndGetToken();
       let response = await makeActivateUserRequest({ token });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 200,
         body: {
           status: ResponseStatus.Success,
@@ -131,7 +135,7 @@ describe("Auth route:", () => {
     test("should respond with an error when existing users tries to sign up", async () => {
       let response = await makeSignUpRequest(validLocalSignUpData);
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 400,
         body: {
           status: ResponseStatus.Error,
@@ -142,9 +146,9 @@ describe("Auth route:", () => {
 
     test("should respond with an error when existing user tries to active again", async () => {
       let token = await signUpAndGetToken();
-      let response = await makeActivateUserRequest({token});
+      let response = await makeActivateUserRequest({ token });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 400,
         body: {
           status: ResponseStatus.Error,
@@ -161,7 +165,7 @@ describe("Auth route:", () => {
         password: sample(testsData.goodPasswords),
       });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -174,7 +178,7 @@ describe("Auth route:", () => {
         password: sample(testsData.badPasswords),
       });
 
-      expect(response2).toMatchObject({
+      assertToMatchResponse(response2, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -189,7 +193,7 @@ describe("Auth route:", () => {
         password: sample(testsData.goodPasswords),
       });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 400,
         body: {
           status: ResponseStatus.Error,
@@ -200,7 +204,7 @@ describe("Auth route:", () => {
     test("valid email and password, should get the user info and login token back", async () => {
       let response = await makeLoginRequest(validLocalSignUpData);
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 200,
         body: {
           status: ResponseStatus.Success,
@@ -217,11 +221,9 @@ describe("Auth route:", () => {
     let token = "";
 
     test("should throw an error provided invalid email", async () => {
-      let response = await request(app)
-        .post(resetPasswordEndpoint)
-        .send({ email: "invalid" });
+      let response = await makeResetPasswordRequest({ email: "invalid" });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 422,
         body: {
           message: InvalidEmail,
@@ -230,13 +232,11 @@ describe("Auth route:", () => {
     });
 
     test("should respond with error if email of non-user is provided", async () => {
-      let response = await request(app)
-        .post(resetPasswordEndpoint)
-        .send({
-          email: "valid@email.com",
-        });
+      let response = await makeResetPasswordRequest({
+        email: "valid@email.com",
+      });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 400,
         body: {
           message: UserDoesNotExists,
@@ -245,12 +245,10 @@ describe("Auth route:", () => {
     });
 
     test("email should be sent to to reset password", async () => {
-      let response = await request(app)
-        .post(resetPasswordEndpoint)
-        .send({
-          email: "codewaseem@gmail.com",
-        });
-      expect(response).toMatchObject({
+      let response = await makeResetPasswordRequest({
+        email: validLocalSignUpData.email,
+      });
+      assertToMatchResponse(response, {
         status: 200,
         body: {
           status: ResponseStatus.Success,
@@ -258,20 +256,18 @@ describe("Auth route:", () => {
         },
       });
       expect(EMailer.sendPasswordResetLink).toHaveBeenCalledWith(
-        "codewaseem@gmail.com",
+        validLocalSignUpData.email,
         expect.any(String)
       );
       token = (EMailer.sendPasswordResetLink as jest.Mock).mock.calls[0][1];
     });
 
     test("token and password should be provided", async () => {
-      let response = await request(app)
-        .post(setNewPasswordEndpoint)
-        .send({
-          password: "somepassword",
-        });
+      let response = await makeSetNewPasswordRequest({
+        password: "somepassword",
+      });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -281,14 +277,12 @@ describe("Auth route:", () => {
     });
 
     test("should respond with error, when password criteria is invalid", async () => {
-      let response = await request(app)
-        .post(setNewPasswordEndpoint)
-        .send({
-          token,
-          password: "newspassword",
-        });
+      let response = await makeSetNewPasswordRequest({
+        token,
+        password: sample(testsData.badPasswords),
+      });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 422,
         body: {
           status: ResponseStatus.Error,
@@ -300,14 +294,12 @@ describe("Auth route:", () => {
     test("should respond with error, when invalid token is used to reset password", async () => {
       expect.assertions(1);
 
-      let response = await request(app)
-        .post(setNewPasswordEndpoint)
-        .send({
-          token: sample(invalidTokens) as string,
-          password: "AtestP@55",
-        });
+      let response = await makeSetNewPasswordRequest({
+        token: sample(invalidTokens) as string,
+        password: newPassword,
+      });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 400,
         body: {
           status: ResponseStatus.Error,
@@ -317,14 +309,12 @@ describe("Auth route:", () => {
     });
 
     test("should reset to new password, when valid token and password provided", async () => {
-      let response = await request(app)
-        .post(setNewPasswordEndpoint)
-        .send({
-          token,
-          password: "AtestP@55",
-        });
+      let response = await makeSetNewPasswordRequest({
+        token,
+        password: newPassword,
+      });
 
-      expect(response).toMatchObject({
+      assertToMatchResponse(response, {
         status: 200,
         body: {
           status: ResponseStatus.Success,
@@ -335,11 +325,11 @@ describe("Auth route:", () => {
       let loginResponse = await request(app)
         .post(loginEndpiont)
         .send({
-          email: "codewaseem@gmail.com",
-          password: "AtestP@55",
+          email: validLocalSignUpData.email,
+          password: newPassword,
         });
 
-      expect(loginResponse).toMatchObject({
+      assertToMatchResponse(loginResponse, {
         status: 200,
         body: {
           status: ResponseStatus.Success,
@@ -357,6 +347,8 @@ describe("Auth route:", () => {
   });
 });
 
+/** Test Helper functions */
+
 function makeLoginRequest(data: any) {
   return request(app)
     .post(loginEndpiont)
@@ -372,6 +364,18 @@ function makeSignUpRequest(data?: any) {
 function makeActivateUserRequest(data?: any) {
   return request(app)
     .post(activateEndpoint)
+    .send(data);
+}
+
+function makeResetPasswordRequest(data?: any) {
+  return request(app)
+    .post(resetPasswordEndpoint)
+    .send(data);
+}
+
+function makeSetNewPasswordRequest(data?: any) {
+  return request(app)
+    .post(setNewPasswordEndpoint)
     .send(data);
 }
 
@@ -401,4 +405,21 @@ async function signUpAndGetToken() {
   await makeSignUpRequest(validLocalSignUpData);
   let token = (EMailer.sendSignUpConfirmation as jest.Mock).mock.calls[0][1];
   return token;
+}
+
+interface ResponseTestData {
+  status: number;
+  body: {
+    status?: ResponseStatus;
+    message?: string;
+    data?: any;
+  };
+  [key: string]: any;
+}
+
+function assertToMatchResponse(
+  recievedResponse: ResponseTestData,
+  expectedResponse: ResponseTestData
+) {
+  expect(recievedResponse).toMatchObject(expectedResponse);
 }
