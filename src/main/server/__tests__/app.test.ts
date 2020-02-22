@@ -46,6 +46,30 @@ const loginEndpiont = `/auth/login`;
 const resetPasswordEndpoint = `/auth/reset-password`;
 const setNewPasswordEndpoint = `/auth/set-password`;
 
+const InvalidEmailResponse = {
+  status: 422,
+  body: {
+    status: ResponseStatus.Error,
+    message: InvalidEmail,
+  },
+};
+
+const InvalidPasswordResponse = {
+  status: 422,
+  body: {
+    status: ResponseStatus.Error,
+    message: InvalidPassword,
+  },
+};
+
+const InvalidTokenResponse = {
+  status: expect.any(Number),
+  body: {
+    status: ResponseStatus.Error,
+    message: TokenExpiredOrInvalid,
+  },
+};
+
 describe("Auth route:", () => {
   beforeAll(async () => {
     await startDB();
@@ -63,13 +87,7 @@ describe("Auth route:", () => {
 
     test("should respond with 422, given invalid email", async () => {
       let badEmailResponse = await signUpRequestWithBadEmail();
-      assertToMatchResponse(badEmailResponse, {
-        status: 422,
-        body: {
-          status: ResponseStatus.Error,
-          message: InvalidEmail,
-        },
-      });
+      assertToMatchResponse(badEmailResponse, InvalidEmailResponse);
     });
 
     test("should respond with 422, given invalid name", async () => {
@@ -87,13 +105,7 @@ describe("Auth route:", () => {
     test("should respond with 422, given invalid password", async () => {
       let badPasswordResponse = await signUpRequestWithBadPassword();
 
-      assertToMatchResponse(badPasswordResponse, {
-        status: 422,
-        body: {
-          status: ResponseStatus.Error,
-          message: InvalidPassword,
-        },
-      });
+      assertToMatchResponse(badPasswordResponse, InvalidPasswordResponse);
     });
 
     test("should respond with 200 when data is valid", async () => {
@@ -114,10 +126,7 @@ describe("Auth route:", () => {
         token: sample(invalidTokens),
       });
 
-      assertToMatchResponse(response, {
-        status: 400,
-        body: { status: ResponseStatus.Error, message: TokenExpiredOrInvalid },
-      });
+      assertToMatchResponse(response, InvalidTokenResponse);
     });
 
     test("should respond with 200, given valid token", async () => {
@@ -165,26 +174,14 @@ describe("Auth route:", () => {
         password: sample(testsData.goodPasswords),
       });
 
-      assertToMatchResponse(response, {
-        status: 422,
-        body: {
-          status: ResponseStatus.Error,
-          message: InvalidEmail,
-        },
-      });
+      assertToMatchResponse(response, InvalidEmailResponse);
 
       let response2 = await makeLoginRequest({
         email: sample(testsData.goodEmails),
         password: sample(testsData.badPasswords),
       });
 
-      assertToMatchResponse(response2, {
-        status: 422,
-        body: {
-          status: ResponseStatus.Error,
-          message: InvalidPassword,
-        },
-      });
+      assertToMatchResponse(response2, InvalidPasswordResponse);
     });
 
     test("wrong username and password should respond with 400", async () => {
@@ -267,13 +264,7 @@ describe("Auth route:", () => {
         password: "somepassword",
       });
 
-      assertToMatchResponse(response, {
-        status: 422,
-        body: {
-          status: ResponseStatus.Error,
-          message: TokenExpiredOrInvalid,
-        },
-      });
+      assertToMatchResponse(response, InvalidTokenResponse);
     });
 
     test("should respond with error, when password criteria is invalid", async () => {
@@ -282,13 +273,7 @@ describe("Auth route:", () => {
         password: sample(testsData.badPasswords),
       });
 
-      assertToMatchResponse(response, {
-        status: 422,
-        body: {
-          status: ResponseStatus.Error,
-          message: InvalidPassword,
-        },
-      });
+      assertToMatchResponse(response, InvalidPasswordResponse);
     });
 
     test("should respond with error, when invalid token is used to reset password", async () => {
@@ -299,13 +284,7 @@ describe("Auth route:", () => {
         password: newPassword,
       });
 
-      assertToMatchResponse(response, {
-        status: 400,
-        body: {
-          status: ResponseStatus.Error,
-          message: TokenExpiredOrInvalid,
-        },
-      });
+      assertToMatchResponse(response, InvalidTokenResponse);
     });
 
     test("should reset to new password, when valid token and password provided", async () => {
