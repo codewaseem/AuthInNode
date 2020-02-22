@@ -60,7 +60,17 @@ UserSchema.methods = {
   },
 };
 
+UserSchema.set("toJSON", {
+  transform: function(_doc, ret) {
+    ret["id"] = ret._id;
+    delete ret["hashed_password"];
+    delete ret["salt"];
+    return ret;
+  },
+});
+
 declare interface IUser extends mongoose.Document {
+  password?: string;
   hashed_password?: string;
   id: string;
   name: string;

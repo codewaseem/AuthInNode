@@ -10,3 +10,4 @@ export const FailedToSaveUserError = "Failed to save user";
 export const UserDoesNotExists = "User does not exists";
 export const OnlyLocalUsersCanResetPassword =
   "Only local users can request for password reset.";
+export const FailedToUpdatePassword = "Failed to update password.";

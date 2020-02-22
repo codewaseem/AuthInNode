@@ -39,6 +39,24 @@ class AuthInteractor {
     this.inputValidator = new AuthDataValidator();
   }
 
+  async setNewPassword(token: string, newPassword: string) {
+    let userId = this.verifyTokenForUserId(token);
+    this.userDbGateway.updatePassword(userId, newPassword);
+  }
+
+  private async getUserById(userId: string) {
+    return this.userDbGateway.getUserById(userId);
+  }
+
+  private verifyTokenForUserId(token: string) {
+    try {
+      let { userId } = TokenController.verify(token) as { userId: string };
+      return userId;
+    } catch (e) {
+      throw TokenExpiredOrInvalid;
+    }
+  }
+
   async resetPasswordRequest(email: string) {
     let normalizedEmail = this.inputValidator.normalizeEmail(email);
     this.inputValidator.validateEmail(normalizedEmail);

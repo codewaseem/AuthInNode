@@ -3,6 +3,7 @@ import {
   InvalidEmail,
   UserDoesNotExists,
   OnlyLocalUsersCanResetPassword,
+  TokenExpiredOrInvalid,
 } from "../../../../constants/strings";
 import userDbGateway from "../mocks/userDbGateway";
 import AuthMailer from "../mocks/AuthMailer";
@@ -14,11 +15,13 @@ let nonLocalEmail = "nonlocal@gmail.com";
 userDbGateway.getUserByEmail = jest.fn((email) => {
   if (email == testEmail) {
     return Promise.resolve({
+      id: "1",
       email,
       loginStrategy: LoginStrategy.Local,
     } as any);
   } else if (email == nonLocalEmail) {
     return Promise.resolve({
+      id: "2",
       email,
       loginStrategy: LoginStrategy.Google,
     });
@@ -70,5 +73,23 @@ describe("Reset password flow", () => {
       testEmail,
       expect.any(String)
     );
+  });
+
+  describe("after password reset request, user can set new password", () => {
+    test("should throw if the token is invalid", async () => {
+      expect.assertions(1);
+      try {
+        await authInteractor.setNewPassword("someinvalidtoken");
+      } catch (e) {
+        expect(e).toMatch(TokenExpiredOrInvalid);
+      }
+    });
+
+    test("should reset password, if token is valid", async () => {
+      await authInteractor.resetPasswordRequest(testEmail);
+      let token = (AuthMailer.sendPasswordResetLink as jest.Mock).mock
+        .calls[0][1];
+      await authInteractor.setNewPassword(token, "newPassword");
+    });
   });
 });

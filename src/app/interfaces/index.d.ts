@@ -23,6 +23,7 @@ declare interface User {
 
 declare interface UserDBGateway {
   addUser(data: SignUpData): Promise<User>;
+  updatePassword(id: string, newPassword: string): Promise<User>;
   getUserById(id: string): Promise<User | null>;
   getUserByEmail(email: string): Promise<User | null>;
   getUserByEmailAndPassword(

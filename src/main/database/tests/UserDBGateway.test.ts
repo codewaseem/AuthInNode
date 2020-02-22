@@ -1,6 +1,11 @@
 import UserGateway from "../UserDBGateway";
-import { UserAlreadyExists } from "../../../constants/strings";
+import {
+  UserAlreadyExists,
+  FailedToUpdatePassword,
+} from "../../../constants/strings";
 import { startDB, stopDB } from "./testDBConnector";
+// eslint-disable-next-line no-unused-vars
+import { User } from "../../../app/interfaces";
 
 describe("User Entity", () => {
   let userGateway: UserGateway;
@@ -10,10 +15,6 @@ describe("User Entity", () => {
 
   beforeEach(async () => {
     userGateway = new UserGateway();
-  });
-
-  test("UserGateway should exists", () => {
-    expect(userGateway).toBeDefined();
   });
 
   describe("Adding new user and getting the same user back", () => {
@@ -30,7 +31,6 @@ describe("User Entity", () => {
         email,
         password,
       });
-
       expect(user.id).toBeDefined();
       expect(user.name).toBe("Waseem Ahmed");
 
@@ -56,8 +56,8 @@ describe("User Entity", () => {
     });
 
     test("getUserById(): should be able to get back the user by id", async () => {
-      let user = await userGateway.getUserById(id);
-      expect(user?.id).toBe(id);
+      let user = (await userGateway.getUserById(id)) as User;
+      expect(user.id).toStrictEqual(id);
     });
 
     test("getUserByEmail(): should get the user by email", async () => {
@@ -85,6 +85,20 @@ describe("User Entity", () => {
       );
 
       expect(user2).toBeNull();
+    });
+
+    test("updating password with invalid id should throw an error", async () => {
+      expect.assertions(1);
+      try {
+        await userGateway.updatePassword("id", "n3WP@55word");
+      } catch (e) {
+        expect(e).toMatch(FailedToUpdatePassword);
+      }
+    });
+
+    test("updating password with valid id should update the password", async () => {
+      let user = await userGateway.updatePassword(id, "n3WP@55word");
+      expect(user).toBeDefined();
     });
   });
 
