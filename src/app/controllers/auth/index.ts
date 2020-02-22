@@ -41,11 +41,8 @@ class AuthInteractor {
 
   async setNewPassword(token: string, newPassword: string) {
     let userId = this.verifyTokenForUserId(token);
-    this.userDbGateway.updatePassword(userId, newPassword);
-  }
-
-  private async getUserById(userId: string) {
-    return this.userDbGateway.getUserById(userId);
+    this.inputValidator.validatePassword(newPassword);
+    return this.userDbGateway.updatePassword(userId, newPassword);
   }
 
   private verifyTokenForUserId(token: string) {
