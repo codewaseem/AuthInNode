@@ -11,3 +11,5 @@ export const UserDoesNotExists = "User does not exists";
 export const OnlyLocalUsersCanResetPassword =
   "Only local users can request for password reset.";
 export const FailedToUpdatePassword = "Failed to update password.";
+export const NewPasswordSetSuccessfully =
+  "New password set successfully. Use your new password to login.";

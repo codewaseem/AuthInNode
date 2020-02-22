@@ -1,5 +1,6 @@
 import { check } from "express-validator";
 import { onlyJSONContentType, handleValidatorErrors } from ".";
+import { TokenExpiredOrInvalid } from "../../../constants/strings";
 
 export const signUpRequestValidator = [
   onlyJSONContentType,
@@ -23,6 +24,20 @@ export const loginRequestValidator = [
   checkPassword(),
   handleValidatorErrors,
 ];
+
+export const resetPasswordValidator = [
+  onlyJSONContentType,
+  checkEmail(),
+  handleValidatorErrors,
+];
+
+export const setPasswordValidator = [
+  onlyJSONContentType,
+  check("token", TokenExpiredOrInvalid).notEmpty(),
+  checkPassword(),
+  handleValidatorErrors,
+];
+
 function checkPassword() {
   return check("password")
     .matches(

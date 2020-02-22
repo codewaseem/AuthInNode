@@ -9,4 +9,4 @@ let AuthMailer: Mockify<AuthMailer> = {
   sendPasswordResetLink: jest.fn(),
 };
 
-export default AuthMailer as any;
+export default AuthMailer;

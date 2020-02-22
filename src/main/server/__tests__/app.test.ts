@@ -15,7 +15,10 @@ import {
   TokenExpiredOrInvalid,
   UserAlreadyExists,
   FailedToSaveUserError,
+  NewPasswordSetSuccessfully,
+  UserDoesNotExists,
 } from "../../../constants/strings";
+import { authInteractor } from "../../setup";
 
 jest.mock("../../mail");
 
@@ -39,6 +42,8 @@ describe("Auth route:", () => {
   let signupEndpoint = `/auth/signup`;
   let activateEndpoint = `/auth/activate`;
   let loginEndpiont = `/auth/login`;
+  let resetPasswordEndpoint = `/auth/reset-password`;
+  let setNewPasswordEndpoint = `/auth/set-password`;
 
   beforeAll(async () => {
     await startDB();
@@ -188,6 +193,145 @@ describe("Auth route:", () => {
       let response = await loginRequestWithValidData(loginEndpiont);
 
       expect(response).toMatchObject({
+        status: 200,
+        body: {
+          status: ResponseStatus.Success,
+          data: {
+            user: expect.any(Object),
+            token: expect.any(String),
+          },
+        },
+      });
+    });
+  });
+
+  describe("/auth/reset-password and /auth/set-password", () => {
+    let token = "";
+
+    test("should throw an error provided invalid email", async () => {
+      let response = await request(app)
+        .post(resetPasswordEndpoint)
+        .send({ email: "invalid" });
+
+      expect(response).toMatchObject({
+        status: 422,
+        body: {
+          message: InvalidEmail,
+        },
+      });
+    });
+
+    test("should respond with error if email of non-user is provided", async () => {
+      let response = await request(app)
+        .post(resetPasswordEndpoint)
+        .send({
+          email: "valid@email.com",
+        });
+
+      expect(response).toMatchObject({
+        status: 400,
+        body: {
+          message: UserDoesNotExists,
+        },
+      });
+    });
+
+    test("email should be sent to to reset password", async () => {
+      let response = await request(app)
+        .post(resetPasswordEndpoint)
+        .send({
+          email: "codewaseem@gmail.com",
+        });
+      expect(response).toMatchObject({
+        status: 200,
+        body: {
+          status: ResponseStatus.Success,
+          message: expect.any(String),
+        },
+      });
+      expect(EMailer.sendPasswordResetLink).toHaveBeenCalledWith(
+        "codewaseem@gmail.com",
+        expect.any(String)
+      );
+      token = (EMailer.sendPasswordResetLink as jest.Mock).mock.calls[0][1];
+    });
+
+    test("token and password should be provided", async () => {
+      let response = await request(app)
+        .post(setNewPasswordEndpoint)
+        .send({
+          password: "somepassword",
+        });
+
+      expect(response).toMatchObject({
+        status: 422,
+        body: {
+          status: ResponseStatus.Error,
+          message: TokenExpiredOrInvalid,
+        },
+      });
+    });
+
+    test("should respond with error, when password criteria is invalid", async () => {
+      let response = await request(app)
+        .post(setNewPasswordEndpoint)
+        .send({
+          token,
+          password: "newspassword",
+        });
+
+      expect(response).toMatchObject({
+        status: 422,
+        body: {
+          status: ResponseStatus.Error,
+          message: InvalidPassword,
+        },
+      });
+    });
+
+    test("should respond with error, when invalid token is used to reset password", async () => {
+      expect.assertions(1);
+
+      let response = await request(app)
+        .post(setNewPasswordEndpoint)
+        .send({
+          token: sample(invalidTokens) as string,
+          password: "AtestP@55",
+        });
+
+      expect(response).toMatchObject({
+        status: 400,
+        body: {
+          status: ResponseStatus.Error,
+          message: TokenExpiredOrInvalid,
+        },
+      });
+    });
+
+    test("should reset to new password, when valid token and password provided", async () => {
+      let response = await request(app)
+        .post(setNewPasswordEndpoint)
+        .send({
+          token,
+          password: "AtestP@55",
+        });
+
+      expect(response).toMatchObject({
+        status: 200,
+        body: {
+          status: ResponseStatus.Success,
+          message: NewPasswordSetSuccessfully,
+        },
+      });
+
+      let loginResponse = await request(app)
+        .post(loginEndpiont)
+        .send({
+          email: "codewaseem@gmail.com",
+          password: "AtestP@55",
+        });
+
+      expect(loginResponse).toMatchObject({
         status: 200,
         body: {
           status: ResponseStatus.Success,
