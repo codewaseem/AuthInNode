@@ -9,6 +9,7 @@ let userDbGateway: Mockify<UserDBGateway> = {
   getUserByEmailAndPassword: jest.fn(),
   getUserByEmail: jest.fn(),
   getUserById: jest.fn(),
+  updatePassword: jest.fn(),
 };
 
 export default userDbGateway as any;
