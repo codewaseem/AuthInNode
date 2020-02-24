@@ -26,7 +26,7 @@ describe("login", () => {
   beforeEach(() => {
     authInteractor = new AuthInteractor({
       userDbGateway,
-      authMailer: AuthMailer,
+      authMailer: AuthMailer as any,
     });
   });
   test("login method should exist", async () => {

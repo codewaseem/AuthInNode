@@ -47,7 +47,7 @@ describe("Reset password flow", () => {
   beforeEach(() => {
     authInteractor = new AuthInteractor({
       userDbGateway,
-      authMailer: AuthMailer,
+      authMailer: AuthMailer as any,
     });
   });
 

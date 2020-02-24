@@ -14,7 +14,7 @@ describe("activateUser", () => {
   beforeEach(() => {
     authInteractor = new AuthInteractor({
       userDbGateway,
-      authMailer: AuthMailer,
+      authMailer: AuthMailer as any,
     });
   });
 
